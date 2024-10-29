@@ -72,12 +72,7 @@ impl EnvOptions {
             es2016: ES2016Options { exponentiation_operator: true },
             es2017: ES2017Options { async_to_generator: true },
             es2018: ES2018Options {
-                // Turned off because it is not ready.
-                object_rest_spread: if include_unfinished_plugins {
-                    Some(ObjectRestSpreadOptions::default())
-                } else {
-                    None
-                },
+                object_rest_spread: Some(ObjectRestSpreadOptions::default()),
                 async_generator_functions: true,
             },
             es2019: ES2019Options { optional_catch_binding: true },

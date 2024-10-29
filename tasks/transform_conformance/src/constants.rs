@@ -101,4 +101,9 @@ pub(crate) const SKIP_TESTS: &[&str] = &[
     "babel-preset-env/test/fixtures/corejs3",
     "babel-preset-env/test/fixtures/debug",
     "babel-preset-env/test/fixtures/debug-babel-7",
+    // Assumptions are not implemented yet.
+    "babel-plugin-transform-object-rest-spread/test/fixtures/assumption",
+    "babel-plugin-transform-object-rest-spread/test/fixtures/object-spread-loose",
+    "babel-plugin-transform-object-rest-spread/test/fixtures/object-rest/remove-unused-excluded-keys-loose",
+    "babel-plugin-transform-object-rest-spread/test/fixtures/object-rest/regression/gh-8323"
 ];

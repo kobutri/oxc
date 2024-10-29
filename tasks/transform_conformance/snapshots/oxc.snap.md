@@ -1,6 +1,6 @@
 commit: d20b314c
 
-Passed: 85/95
+Passed: 86/99
 
 # All Passed:
 * babel-plugin-transform-class-static-block
@@ -13,6 +13,17 @@ Passed: 85/95
 * babel-preset-typescript
 * babel-plugin-transform-react-jsx-source
 * regexp
+
+
+# babel-plugin-transform-object-rest-spread (1/4)
+* object-rest/complex/input.js
+x Output mismatch
+
+* object-rest/export/input.js
+x Output mismatch
+
+* object-rest/keys/input.js
+x Output mismatch
 
 
 # babel-plugin-transform-typescript (2/9)

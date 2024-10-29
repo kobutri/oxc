@@ -1,3 +1,4 @@
 transformer_misc Summary:
 AST Parsed     : 30/30 (100.00%)
-Positive Passed: 30/30 (100.00%)
+Positive Passed: 29/30 (96.67%)
+Mismatch: tasks/coverage/misc/pass/oxc-1740.tsx

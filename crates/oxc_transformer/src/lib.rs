@@ -161,11 +161,11 @@ impl<'a, 'ctx> Traverse<'a> for TransformerImpl<'a, 'ctx> {
         if let Some(typescript) = self.x0_typescript.as_mut() {
             typescript.exit_program(program, ctx);
         }
+        self.x2_es2018.exit_program(program, ctx);
         self.common.exit_program(program, ctx);
     }
 
     // ALPHASORT
-
     fn enter_arrow_function_expression(
         &mut self,
         arrow: &mut ArrowFunctionExpression<'a>,
@@ -175,6 +175,15 @@ impl<'a, 'ctx> Traverse<'a> for TransformerImpl<'a, 'ctx> {
         if let Some(typescript) = self.x0_typescript.as_mut() {
             typescript.enter_arrow_function_expression(arrow, ctx);
         }
+        self.x2_es2018.enter_arrow_function_expression(arrow, ctx);
+    }
+
+    fn enter_variable_declaration(
+        &mut self,
+        decl: &mut VariableDeclaration<'a>,
+        ctx: &mut TraverseCtx<'a>,
+    ) {
+        self.x2_es2018.enter_variable_declaration(decl, ctx);
     }
 
     fn enter_variable_declarator(
@@ -303,6 +312,7 @@ impl<'a, 'ctx> Traverse<'a> for TransformerImpl<'a, 'ctx> {
 
     fn enter_function(&mut self, func: &mut Function<'a>, ctx: &mut TraverseCtx<'a>) {
         self.common.enter_function(func, ctx);
+        self.x2_es2018.enter_function(func, ctx);
     }
 
     fn exit_function(&mut self, func: &mut Function<'a>, ctx: &mut TraverseCtx<'a>) {
@@ -520,10 +530,12 @@ impl<'a, 'ctx> Traverse<'a> for TransformerImpl<'a, 'ctx> {
         if let Some(typescript) = self.x0_typescript.as_mut() {
             typescript.enter_for_in_statement(stmt, ctx);
         }
+        self.x2_es2018.enter_for_in_statement(stmt, ctx);
     }
 
     fn enter_catch_clause(&mut self, clause: &mut CatchClause<'a>, ctx: &mut TraverseCtx<'a>) {
         self.x2_es2019.enter_catch_clause(clause, ctx);
+        self.x2_es2018.enter_catch_clause(clause, ctx);
     }
 
     fn enter_import_declaration(

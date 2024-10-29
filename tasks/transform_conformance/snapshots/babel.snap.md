@@ -1,6 +1,6 @@
 commit: d20b314c
 
-Passed: 319/633
+Passed: 324/610
 
 # All Passed:
 * babel-plugin-transform-class-static-block
@@ -296,50 +296,11 @@ x Output mismatch
 x Output mismatch
 
 
-# babel-plugin-transform-object-rest-spread (5/59)
-* assumption-ignoreFunctionLength/parameters-object-rest-used-in-default/input.js
-x Output mismatch
-
-* assumption-objectRestNoSymbols/rest-assignment-expression/input.js
-x Output mismatch
-
-* assumption-objectRestNoSymbols/rest-computed/input.js
-x Output mismatch
-
-* assumption-objectRestNoSymbols/rest-nested/input.js
-x Output mismatch
-
-* assumption-objectRestNoSymbols/rest-var-declaration/input.js
-x Output mismatch
-
-* assumption-pureGetters/rest-remove-unused-excluded-keys/input.js
-x Output mismatch
-
-* assumption-pureGetters/spread-single-call/input.js
-x Output mismatch
-
-* assumption-setSpreadProperties/assignment/input.js
-x Output mismatch
-
-* assumption-setSpreadProperties/expression/input.js
-x Output mismatch
-
-* assumption-setSpreadProperties/targets-support-object-assign/input.js
-x Output mismatch
-
-* assumption-setSpreadProperties-with-useBuiltIns/assignment/input.js
-x Output mismatch
-
-* assumption-setSpreadProperties-with-useBuiltIns/expression/input.js
-x Output mismatch
-
+# babel-plugin-transform-object-rest-spread (11/36)
 * object-rest/assignment-expression/input.js
 x Output mismatch
 
 * object-rest/catch-clause/input.js
-x Output mismatch
-
-* object-rest/duplicate-decl-bug/input.js
 x Output mismatch
 
 * object-rest/export/input.mjs
@@ -381,12 +342,6 @@ x Output mismatch
 * object-rest/nested-order/input.js
 x Output mismatch
 
-* object-rest/non-string-computed/input.js
-x Output mismatch
-
-* object-rest/null-destructuring/input.js
-x Output mismatch
-
 * object-rest/object-ref-computed/input.js
 x Output mismatch
 
@@ -396,52 +351,13 @@ x Output mismatch
 * object-rest/parameters-object-rest-used-in-default/input.js
 x Output mismatch
 
-* object-rest/remove-unused-excluded-keys-loose/input.js
-x Output mismatch
-
 * object-rest/symbol/input.js
 x Output mismatch
 
 * object-rest/template-literal-allLiterals-true-no-hoisting/input.js
 x Output mismatch
 
-* object-rest/template-literal-property-allLiterals-false/input.js
-x Output mismatch
-
-* object-rest/template-literal-property-allLiterals-true/input.js
-x Output mismatch
-
 * object-rest/variable-destructuring/input.js
-x Output mismatch
-
-* object-rest/with-array-rest/input.js
-x Output mismatch
-
-* object-spread/expression/input.js
-x Output mismatch
-
-* object-spread/side-effect/input.js
-x Output mismatch
-
-* object-spread-loose/assignment/input.js
-x Output mismatch
-
-* object-spread-loose/expression/input.js
-x Output mismatch
-
-* object-spread-loose/parameters-object-rest-used-in-default/input.js
-x Output mismatch
-
-* object-spread-loose/side-effect/input.js
-x Output mismatch
-
-* object-spread-loose/variable-declaration/input.js
-x Output mismatch
-
-* object-spread-loose-builtins/expression/input.js
-x Output mismatch
-
-* object-spread-loose-builtins/side-effect/input.js
 x Output mismatch
 
 * regression/gh-4904/input.js
@@ -453,16 +369,24 @@ x Output mismatch
 * regression/gh-7304/input.mjs
 x Output mismatch
 
-* regression/gh-7388/input.js
-x Output mismatch
-
 * regression/gh-8323/input.js
-x Output mismatch
+
+  x Option `loose` is not implemented for object-rest-spread.
 
 
-# babel-plugin-transform-async-to-generator (11/28)
+
+# babel-plugin-transform-async-to-generator (10/28)
 * assumption-ignoreFunctionLength-true/basic/input.mjs
-x Output mismatch
+
+  x Compiler assumption `ignoreFunctionLength` is not implemented for object-
+  | rest-spread.
+
+
+* assumption-ignoreFunctionLength-true/export-default-function/input.mjs
+
+  x Compiler assumption `ignoreFunctionLength` is not implemented for object-
+  | rest-spread.
+
 
 * assumption-noNewArrows-false/basic/input.js
 x Output mismatch
@@ -2274,10 +2198,17 @@ Spread children are not supported in React.
 pragma and pragmaFrag cannot be set when runtime is automatic.
 
 * spread-transform/transform-to-babel-extend/input.js
-x Output mismatch
+
+  x Option `loose` is not implemented for object-rest-spread.
+
 
 * spread-transform/transform-to-object-assign/input.js
-x Output mismatch
+
+  x Option `loose` is not implemented for object-rest-spread.
+
+
+  x Option `useBuiltIns` is not implemented for object-rest-spread.
+
 
 
 # babel-plugin-transform-react-jsx-development (8/11)
