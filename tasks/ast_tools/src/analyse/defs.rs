@@ -3,9 +3,9 @@
 use bitflags::bitflags;
 use syn::{ItemEnum, ItemStruct};
 
-use super::{FileId, TypeId};
+use super::schema::{FileId, TypeId};
 
-type Discriminant = u8;
+pub type Discriminant = u8;
 
 #[derive(Debug)]
 pub enum TypeDef {

@@ -1,6 +1,6 @@
 use syn::{ItemEnum, ItemStruct};
 
-use super::FileId;
+use super::schema::FileId;
 
 #[derive(Debug)]
 pub enum Skeleton {

@@ -11,8 +11,9 @@ use syn::{
 };
 
 use super::{
+    schema::FileId,
     skeleton::{EnumSkeleton, Skeleton, StructSkeleton},
-    FileId, FxIndexMap,
+    FxIndexMap,
 };
 
 /// Load file and extract structs and enums with `#[ast]` attr.

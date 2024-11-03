@@ -10,16 +10,13 @@ use super::{
         BoxDef, CellDef, EnumDef, FieldDef, GeneratedDerives, OptionDef, PrimitiveDef, StructDef,
         TypeDef, VariantDef, VecDef,
     },
-    File, FileId, FxIndexMap, FxIndexSet,
-};
-
-use super::{
+    schema::{File, FileId, Schema, TypeId},
     skeleton::{EnumSkeleton, Skeleton, StructSkeleton},
-    TypeId,
+    FxIndexMap, FxIndexSet,
 };
 
 /// Parse `Skeleton`s into `TypeDef`s.
-pub fn parse(skeletons: FxIndexMap<String, Skeleton>, files: &[File]) -> Vec<TypeDef> {
+pub fn parse(skeletons: FxIndexMap<String, Skeleton>, files: Vec<File>) -> Schema {
     // Split `skeletons` into a `IndexSet<String>` (type names) and `Vec<Skeleton>` (skeletons)
     let mut skeletons_vec = Vec::with_capacity(skeletons.len());
     let type_names = skeletons
@@ -35,9 +32,9 @@ pub fn parse(skeletons: FxIndexMap<String, Skeleton>, files: &[File]) -> Vec<Typ
 }
 
 /// Parsing state.
-struct ParseState<'s> {
+struct ParseState {
     type_names: FxIndexSet<String>,
-    files: &'s [File],
+    files: Vec<File>,
     extra_types: Vec<TypeDef>,
     options: FxHashMap<TypeId, TypeId>,
     boxes: FxHashMap<TypeId, TypeId>,
@@ -45,9 +42,9 @@ struct ParseState<'s> {
     cells: FxHashMap<TypeId, TypeId>,
 }
 
-impl<'s> ParseState<'s> {
+impl ParseState {
     /// Create `ParseState`.
-    fn new(type_names: FxIndexSet<String>, files: &'s [File]) -> Self {
+    fn new(type_names: FxIndexSet<String>, files: Vec<File>) -> Self {
         Self {
             type_names,
             files,
@@ -60,11 +57,11 @@ impl<'s> ParseState<'s> {
     }
 
     /// Parse all `Skeleton`s into `TypeDef`s.
-    fn parse_all(mut self, skeletons: Vec<Skeleton>) -> Vec<TypeDef> {
+    fn parse_all(mut self, skeletons: Vec<Skeleton>) -> Schema {
         let mut defs =
             skeletons.into_iter().map(|skeleton| self.parse_type(skeleton)).collect::<Vec<_>>();
         defs.extend(self.extra_types);
-        defs
+        Schema { defs, files: self.files }
     }
 
     /// Get `TypeId` for type name.

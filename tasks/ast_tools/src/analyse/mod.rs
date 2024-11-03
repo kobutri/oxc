@@ -9,22 +9,14 @@ use crate::{log, log_success};
 mod defs;
 mod load;
 mod parse;
+mod schema;
 mod skeleton;
 use load::load_file;
 use parse::parse;
-
-type FileId = usize;
-type TypeId = usize;
+use schema::File;
 
 type FxIndexMap<K, V> = IndexMap<K, V, BuildHasherDefault<FxHasher>>;
 type FxIndexSet<K> = IndexSet<K, BuildHasherDefault<FxHasher>>;
-
-#[derive(Debug)]
-pub struct File {
-    #[expect(dead_code)]
-    pub file_path: String,
-    pub import_path: String,
-}
 
 pub fn analyse(file_paths: &[&str]) {
     // Load files and populate `Vec` of skeletons + mapping from type name to `TypeId`.
@@ -45,7 +37,7 @@ pub fn analyse(file_paths: &[&str]) {
         .collect::<Vec<_>>();
 
     // Convert skeletons into schema
-    let _defs = parse(skeletons, &files);
+    let _schema = parse(skeletons, files);
 }
 
 /// Convert file path to import path.
