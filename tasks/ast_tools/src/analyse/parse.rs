@@ -27,12 +27,12 @@ pub fn parse(skeletons: FxIndexMap<String, Skeleton>, files: Vec<File>) -> Schem
         })
         .collect();
 
-    let state = ParseState::new(type_names, files);
+    let state = Parser::new(type_names, files);
     state.parse_all(skeletons_vec)
 }
 
-/// Parsing state.
-struct ParseState {
+/// Types parser.
+struct Parser {
     type_names: FxIndexSet<String>,
     files: Vec<File>,
     extra_types: Vec<TypeDef>,
@@ -42,8 +42,8 @@ struct ParseState {
     cells: FxHashMap<TypeId, TypeId>,
 }
 
-impl ParseState {
-    /// Create `ParseState`.
+impl Parser {
+    /// Create `Parser`.
     fn new(type_names: FxIndexSet<String>, files: Vec<File>) -> Self {
         Self {
             type_names,
@@ -56,7 +56,7 @@ impl ParseState {
         }
     }
 
-    /// Parse all `Skeleton`s into `TypeDef`s.
+    /// Parse all `Skeleton`s into `TypeDef`s and return `Schema`.
     fn parse_all(mut self, skeletons: Vec<Skeleton>) -> Schema {
         let mut defs =
             skeletons.into_iter().map(|skeleton| self.parse_type(skeleton)).collect::<Vec<_>>();
