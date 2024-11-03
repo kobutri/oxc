@@ -13,12 +13,14 @@ mod schema;
 mod skeleton;
 use load::load_file;
 use parse::parse;
-use schema::File;
+use schema::{File, FileId, Schema};
+use skeleton::Skeleton;
 
 type FxIndexMap<K, V> = IndexMap<K, V, BuildHasherDefault<FxHasher>>;
 type FxIndexSet<K> = IndexSet<K, BuildHasherDefault<FxHasher>>;
 
-pub fn analyse(file_paths: &[&str]) {
+/// Analyse the files with provided paths, and generate a `Schema`.
+pub fn analyse(file_paths: &[&str]) -> Schema {
     // Load files and populate `Vec` of skeletons + mapping from type name to `TypeId`.
     // `TypeId` is index into `skeletons`.
     let mut skeletons = FxIndexMap::default();
@@ -26,18 +28,27 @@ pub fn analyse(file_paths: &[&str]) {
     let files = file_paths
         .iter()
         .enumerate()
-        .map(|(file_id, &file_path)| {
-            log!("Load {file_path}... ");
-            let import_path = get_import_path(file_path);
-            load_file(file_id, file_path, &mut skeletons);
-            let file_path = file_path.to_string();
-            log_success!();
-            File { file_path, import_path }
-        })
+        .map(|(file_id, &file_path)| analyse_file(file_id, file_path, &mut skeletons))
         .collect::<Vec<_>>();
 
     // Convert skeletons into schema
-    let _schema = parse(skeletons, files);
+    parse(skeletons, files)
+}
+
+/// Analyse file with provided path and add types to `skeletons`.
+///
+/// Returns a `File`.
+fn analyse_file(
+    file_id: FileId,
+    file_path: &str,
+    skeletons: &mut FxIndexMap<String, Skeleton>,
+) -> File {
+    log!("Load {file_path}... ");
+    let import_path = get_import_path(file_path);
+    load_file(file_id, file_path, skeletons);
+    log_success!();
+
+    File { file_path: file_path.to_string(), import_path }
 }
 
 /// Convert file path to import path.
