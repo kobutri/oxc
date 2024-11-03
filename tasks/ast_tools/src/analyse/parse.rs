@@ -7,8 +7,8 @@ use syn::{
 
 use super::{
     defs::{
-        BoxDef, CellDef, EnumDef, FieldDef, OptionDef, PrimitiveDef, StructDef, TypeDef,
-        VariantDef, VecDef,
+        BoxDef, CellDef, EnumDef, FieldDef, GeneratedDerives, OptionDef, PrimitiveDef, StructDef,
+        TypeDef, VariantDef, VecDef,
     },
     File, FileId,
 };
@@ -106,6 +106,7 @@ impl<'s> ParseState<'s> {
                 has_lifetime: false,
                 fields: vec![FieldDef { name: None, type_id: self.type_id("u8") }],
                 is_visitable: false,
+                generated_derives: GeneratedDerives::None,
                 file_id: self.get_file_id("oxc_ast::ast::literal"),
                 item: parse_quote! { struct RegExpFlags(u8); },
             }),
@@ -148,7 +149,16 @@ impl<'s> ParseState<'s> {
         let has_lifetime = check_generics(&item.generics, &name);
         let fields = self.parse_fields(&item.fields);
         let is_visitable = check_ast_attr(&item.attrs);
-        TypeDef::Struct(StructDef { name, has_lifetime, fields, is_visitable, file_id, item })
+        let generated_derives = GeneratedDerives::None; // TODO
+        TypeDef::Struct(StructDef {
+            name,
+            has_lifetime,
+            fields,
+            is_visitable,
+            generated_derives,
+            file_id,
+            item,
+        })
     }
 
     /// Parse `EnumSkeleton` to yield a `TypeDef`.
@@ -158,12 +168,14 @@ impl<'s> ParseState<'s> {
         let variants = item.variants.iter().map(|variant| self.parse_variant(variant)).collect();
         let inherits = inherits.into_iter().map(|name| self.type_id(&name)).collect();
         let is_visitable = check_ast_attr(&item.attrs);
+        let generated_derives = GeneratedDerives::None; // TODO
         TypeDef::Enum(EnumDef {
             name,
             has_lifetime,
             variants,
             inherits,
             is_visitable,
+            generated_derives,
             file_id,
             item,
         })

@@ -1,5 +1,6 @@
 #![expect(dead_code)]
 
+use bitflags::bitflags;
 use syn::{ItemEnum, ItemStruct};
 
 use super::{FileId, TypeId};
@@ -41,6 +42,21 @@ impl TypeDef {
             _ => false,
         }
     }
+
+    /// Get all traits which have derives generated for this type.
+    #[inline]
+    pub fn generated_derives(&self) -> GeneratedDerives {
+        match self {
+            TypeDef::Struct(def) => def.generated_derives,
+            TypeDef::Enum(def) => def.generated_derives,
+            _ => GeneratedDerives::empty(),
+        }
+    }
+
+    /// Get whether a derive is generated for this type.
+    pub fn generates_derive(&self, derive: GeneratedDerives) -> bool {
+        self.generated_derives().contains(derive)
+    }
 }
 
 #[derive(Debug)]
@@ -49,6 +65,7 @@ pub struct StructDef {
     pub has_lifetime: bool,
     pub fields: Vec<FieldDef>,
     pub is_visitable: bool,
+    pub generated_derives: GeneratedDerives,
     pub file_id: FileId,
     pub item: ItemStruct,
 }
@@ -61,6 +78,7 @@ pub struct EnumDef {
     /// For `@inherits` inherited enum variants
     pub inherits: Vec<TypeId>,
     pub is_visitable: bool,
+    pub generated_derives: GeneratedDerives,
     pub file_id: FileId,
     pub item: ItemEnum,
 }
@@ -106,4 +124,17 @@ pub struct VecDef {
 pub struct CellDef {
     pub name: String,
     pub inner_type_id: TypeId,
+}
+
+bitflags! {
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    pub struct GeneratedDerives: u8 {
+        const CloneIn = 1 << 0;
+        const ContentEq = 1 << 1;
+        const ContentHash = 1 << 2;
+        const ESTree = 1 << 3;
+        const GetSpan = 1 << 4;
+
+        const None = Self::empty().bits();
+    }
 }
