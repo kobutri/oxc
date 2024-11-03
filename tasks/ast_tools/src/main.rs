@@ -5,6 +5,7 @@ use codegen::{AstCodegen, AstCodegenResult};
 use itertools::Itertools;
 use syn::parse_file;
 
+mod analyse;
 mod codegen;
 mod derives;
 mod generators;
@@ -63,12 +64,17 @@ pub struct CliOptions {
     schema: bool,
 }
 
+#[expect(unreachable_code)]
 fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     let cli_options = cli_options().run();
 
     if cli_options.quiet {
         logger::quiet().normalize_with("Failed to set logger to `quiet` mode.")?;
     }
+
+    // TODO: Work in progress
+    analyse::analyse(SOURCE_PATHS);
+    return Ok(());
 
     let AstCodegenResult { mut outputs, schema } = SOURCE_PATHS
         .iter()
