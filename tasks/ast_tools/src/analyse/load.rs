@@ -1,6 +1,6 @@
 use std::{fs, io::Read};
 
-use rustc_hash::FxHashMap;
+use indexmap::map::Entry;
 use syn::{
     braced,
     parse::{Parse, ParseBuffer},
@@ -12,7 +12,7 @@ use syn::{
 
 use super::{
     skeleton::{EnumSkeleton, Skeleton, StructSkeleton},
-    FileId, TypeId,
+    FileId, FxIndexMap,
 };
 
 /// Load file and extract structs and enums with `#[ast]` attr.
@@ -24,12 +24,7 @@ use super::{
 /// Inserts `TypeSkeleton`s into `skeletons` and adds mappings from type name to type ID.
 ///
 /// This is the bare minimum to be able to "link up" types to each other in next pass.
-pub fn load_file(
-    file_id: FileId,
-    file_path: &str,
-    skeletons: &mut Vec<Skeleton>,
-    names_to_ids: &mut FxHashMap<String, TypeId>,
-) {
+pub fn load_file(file_id: FileId, file_path: &str, skeletons: &mut FxIndexMap<String, Skeleton>) {
     let mut file = fs::File::open(file_path).unwrap();
     let mut content = String::new();
     file.read_to_string(&mut content).unwrap();
@@ -53,10 +48,12 @@ pub fn load_file(
             _ => continue,
         };
 
-        let type_id = skeletons.len();
-        skeletons.push(skeleton);
-        assert!(!names_to_ids.contains_key(&name), "2 types with same name: {name}");
-        names_to_ids.insert(name, type_id);
+        match skeletons.entry(name) {
+            Entry::Occupied(entry) => panic!("2 types with same name: {}", entry.key()),
+            Entry::Vacant(entry) => {
+                entry.insert(skeleton);
+            }
+        }
     }
 }
 

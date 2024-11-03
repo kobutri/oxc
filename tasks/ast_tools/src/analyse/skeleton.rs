@@ -22,12 +22,3 @@ pub struct EnumSkeleton {
     pub inherits: Vec<String>,
     pub file_id: FileId,
 }
-
-impl Skeleton {
-    pub fn name(&self) -> &str {
-        match self {
-            Self::Struct(skeleton) => skeleton.name.as_str(),
-            Self::Enum(skeleton) => skeleton.name.as_str(),
-        }
-    }
-}

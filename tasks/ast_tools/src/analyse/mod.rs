@@ -1,7 +1,8 @@
-use std::path::PathBuf;
+use std::{hash::BuildHasherDefault, path::PathBuf};
 
+use indexmap::{IndexMap, IndexSet};
 use itertools::Itertools;
-use rustc_hash::FxHashMap;
+use rustc_hash::FxHasher;
 
 use crate::{log, log_success};
 
@@ -15,6 +16,9 @@ use parse::parse;
 type FileId = usize;
 type TypeId = usize;
 
+type FxIndexMap<K, V> = IndexMap<K, V, BuildHasherDefault<FxHasher>>;
+type FxIndexSet<K> = IndexSet<K, BuildHasherDefault<FxHasher>>;
+
 #[derive(Debug)]
 pub struct File {
     #[expect(dead_code)]
@@ -25,8 +29,7 @@ pub struct File {
 pub fn analyse(file_paths: &[&str]) {
     // Load files and populate `Vec` of skeletons + mapping from type name to `TypeId`.
     // `TypeId` is index into `skeletons`.
-    let mut skeletons = vec![];
-    let mut names_to_ids = FxHashMap::default();
+    let mut skeletons = FxIndexMap::default();
 
     let files = file_paths
         .iter()
@@ -34,7 +37,7 @@ pub fn analyse(file_paths: &[&str]) {
         .map(|(file_id, &file_path)| {
             log!("Load {file_path}... ");
             let import_path = get_import_path(file_path);
-            load_file(file_id, file_path, &mut skeletons, &mut names_to_ids);
+            load_file(file_id, file_path, &mut skeletons);
             let file_path = file_path.to_string();
             log_success!();
             File { file_path, import_path }
@@ -42,7 +45,7 @@ pub fn analyse(file_paths: &[&str]) {
         .collect::<Vec<_>>();
 
     // Convert skeletons into schema
-    let _defs = parse(skeletons, &mut names_to_ids, &files);
+    let _defs = parse(skeletons, &files);
 }
 
 /// Convert file path to import path.
