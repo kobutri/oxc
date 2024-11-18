@@ -765,9 +765,10 @@ impl<'a, 'ctx> ObjectRestSpread<'a, 'ctx> {
 
         match &mut decl.id.kind {
             // Example: `let {x, ...rest } = foo();`.
-            BindingPatternKind::ObjectPattern(pat) if pat.rest.is_some() => {
+            BindingPatternKind::ObjectPattern(pat) => {
                 let mut reference_builder =
                     ReferenceBuilder::new(init, symbol_flags, scope_id, false, ctx);
+
                 // Add `_foo = foo()`
                 if let Some(id) = reference_builder.binding.take() {
                     builder.decls.push(ctx.ast.variable_declarator(
@@ -778,40 +779,48 @@ impl<'a, 'ctx> ObjectRestSpread<'a, 'ctx> {
                         false,
                     ));
                 }
+
                 // Walk the properties that may contain a nested rest spread.
                 for p in pat.properties.iter_mut() {
                     self.recursive_walk_binding_pattern(&mut p.value, &mut builder, ctx);
                 }
-                // Transform the object pattern with a rest pattern.
-                let datum = Self::transform_object_pattern(pat, &mut builder, ctx);
-                // Add `{ x } = foo`.
-                if !pat.properties.is_empty() {
-                    let binding_pattern_kind = ctx.ast.binding_pattern_kind_object_pattern(
-                        pat.span,
-                        ctx.ast.move_vec(&mut pat.properties),
-                        NONE,
+
+                if pat.rest.is_some() {
+                    // Transform the object pattern with a rest pattern.
+                    let datum = Self::transform_object_pattern(pat, &mut builder, ctx);
+                    // Add `{ x } = foo`.
+                    if !pat.properties.is_empty() {
+                        let binding_pattern_kind = ctx.ast.binding_pattern_kind_object_pattern(
+                            pat.span,
+                            ctx.ast.move_vec(&mut pat.properties),
+                            NONE,
+                        );
+                        builder.decls.push(ctx.ast.variable_declarator(
+                            decl.span,
+                            decl.kind,
+                            ctx.ast.binding_pattern(binding_pattern_kind, NONE, false),
+                            Some(reference_builder.create_read_expression(ctx)),
+                            false,
+                        ));
+                    };
+                    // Add `rest = babelHelpers.extends({}, (babelHelpers.objectDestructuringEmpty(_foo), _foo))`.
+                    // Or `rest = babelHelpers.objectWithoutProperties(_foo, ["x"])`.
+                    let (lhs, rhs) = datum.get_lhs_rhs(
+                        &mut reference_builder,
+                        &mut self.excluded_variabled_declarators,
+                        self.ctx,
+                        ctx,
                     );
-                    let decl = ctx.ast.variable_declarator(
-                        decl.span,
-                        decl.kind,
-                        ctx.ast.binding_pattern(binding_pattern_kind, NONE, false),
-                        Some(reference_builder.create_read_expression(ctx)),
-                        false,
-                    );
-                    builder.decls.push(decl);
-                };
-                // Add `rest = babelHelpers.extends({}, (babelHelpers.objectDestructuringEmpty(_foo), _foo))`.
-                // Or `rest = babelHelpers.objectWithoutProperties(_foo, ["x"])`.
-                let (lhs, rhs) = datum.get_lhs_rhs(
-                    &mut reference_builder,
-                    &mut self.excluded_variabled_declarators,
-                    self.ctx,
-                    ctx,
-                );
-                if let BindingPatternOrAssignmentTarget::BindingPattern(lhs) = lhs {
-                    let decl =
-                        ctx.ast.variable_declarator(lhs.span(), decl.kind, lhs, Some(rhs), false);
-                    builder.decls.push(decl);
+                    if let BindingPatternOrAssignmentTarget::BindingPattern(lhs) = lhs {
+                        let decl = ctx.ast.variable_declarator(
+                            lhs.span(),
+                            decl.kind,
+                            lhs,
+                            Some(rhs),
+                            false,
+                        );
+                        builder.decls.push(decl);
+                    }
                 }
             }
             _ => {
