@@ -763,31 +763,62 @@ impl<'a, 'ctx> ObjectRestSpread<'a, 'ctx> {
 
         let mut builder = DeclsBuilder::new(decl.kind, symbol_flags, scope_id, ctx);
 
+        let mut reference_builder = ReferenceBuilder::new(init, symbol_flags, scope_id, false, ctx);
+
+        // Add `_foo = foo()`
+        if let Some(id) = reference_builder.binding.take() {
+            let decl = ctx.ast.variable_declarator(
+                SPAN,
+                builder.kind,
+                id,
+                Some(reference_builder.create_read_expression(ctx)),
+                false,
+            );
+            builder.decls.push(decl);
+        }
+
+        let index = builder.decls.len();
+
         match &mut decl.id.kind {
-            // Example: `let {x, ...rest } = foo();`.
+            // Example: `let { x, ...rest } = foo();`.
             BindingPatternKind::ObjectPattern(pat) => {
-                let mut reference_builder =
-                    ReferenceBuilder::new(init, symbol_flags, scope_id, false, ctx);
-
-                // Add `_foo = foo()`
-                if let Some(id) = reference_builder.binding.take() {
-                    builder.decls.push(ctx.ast.variable_declarator(
-                        SPAN,
-                        builder.kind,
-                        id,
-                        reference_builder.expr.take(),
-                        false,
-                    ));
-                }
-
                 // Walk the properties that may contain a nested rest spread.
-                for p in pat.properties.iter_mut() {
-                    self.recursive_walk_binding_pattern(&mut p.value, &mut builder, ctx);
-                }
 
-                if pat.rest.is_some() {
+                if let Some(rest) = pat.rest.take() {
+                    for p in pat.properties.iter_mut() {
+                        self.recursive_walk_binding_pattern(&mut p.value, &mut builder, ctx);
+                    }
                     // Transform the object pattern with a rest pattern.
-                    let datum = Self::transform_object_pattern(pat, &mut builder, ctx);
+                    let lhs =
+                        BindingPatternOrAssignmentTarget::BindingPattern(rest.unbox().argument);
+                    let mut all_primitives = true;
+                    // Create the access keys.
+                    // `let { a, b, ...c } = foo` -> `["a", "b"]`
+                    let keys = ctx.ast.vec_from_iter(pat.properties.iter_mut().flat_map(
+                        |binding_property| {
+                            Self::transform_property_key(
+                                &mut binding_property.key,
+                                &mut builder,
+                                &mut all_primitives,
+                                ctx,
+                            )
+                        },
+                    ));
+                    // Remove the object pattern that became empty.
+                    // object_pattern.properties.retain(|binding_property| match &binding_property.value.kind {
+                    // BindingPatternKind::ObjectPattern(object_pattern) => {
+                    // !object_pattern.properties.is_empty()
+                    // }
+                    // _ => true,
+                    // });
+                    let datum = Datum {
+                        lhs,
+                        path: vec![],
+                        keys,
+                        has_no_properties: pat.properties.is_empty(),
+                        all_primitives,
+                    };
+
                     // Add `{ x } = foo`.
                     if !pat.properties.is_empty() {
                         let binding_pattern_kind = ctx.ast.binding_pattern_kind_object_pattern(
@@ -822,23 +853,36 @@ impl<'a, 'ctx> ObjectRestSpread<'a, 'ctx> {
                         builder.decls.push(decl);
                     }
                 }
+
+                // let mut binding_pattern_kind =
+                // ctx.ast.binding_pattern_kind_object_pattern(decl.span, ctx.ast.vec(), NONE);
+                // mem::swap(&mut binding_pattern_kind, &mut decl.id.kind);
+                // let decl = ctx.ast.variable_declarator(
+                // decl.span,
+                // decl.kind,
+                // ctx.ast.binding_pattern(binding_pattern_kind, NONE, false),
+                // Some(ctx.ast.move_expression(init)),
+                // false,
+                // );
+                // builder.decls.insert(index, decl);
             }
             _ => {
                 self.recursive_walk_binding_pattern(&mut decl.id, &mut builder, ctx);
-                // Insert the original declarator by copying its data out.
-                let mut binding_pattern_kind =
-                    ctx.ast.binding_pattern_kind_object_pattern(decl.span, ctx.ast.vec(), NONE);
-                mem::swap(&mut binding_pattern_kind, &mut decl.id.kind);
-                let decl = ctx.ast.variable_declarator(
-                    decl.span,
-                    decl.kind,
-                    ctx.ast.binding_pattern(binding_pattern_kind, NONE, false),
-                    Some(ctx.ast.move_expression(init)),
-                    false,
-                );
-                builder.decls.insert(0, decl);
             }
         }
+
+        // Insert the original declarator by copying its data out.
+        let mut binding_pattern_kind =
+            ctx.ast.binding_pattern_kind_object_pattern(decl.span, ctx.ast.vec(), NONE);
+        mem::swap(&mut binding_pattern_kind, &mut decl.id.kind);
+        let decl = ctx.ast.variable_declarator(
+            decl.span,
+            decl.kind,
+            ctx.ast.binding_pattern(binding_pattern_kind, NONE, false),
+            Some(reference_builder.create_read_expression(ctx)),
+            false,
+        );
+        builder.decls.insert(index, decl);
 
         builder.decls
     }
@@ -874,42 +918,6 @@ impl<'a, 'ctx> ObjectRestSpread<'a, 'ctx> {
                     return;
                 }
             }
-        }
-    }
-
-    fn transform_object_pattern(
-        object_pattern: &mut ObjectPattern<'a>,
-        builder: &mut DeclsBuilder<'a>,
-        ctx: &mut TraverseCtx<'a>,
-    ) -> Datum<'a> {
-        let rest_pattern = object_pattern.rest.take().map(|rest| rest.unbox().argument).unwrap();
-        let lhs = BindingPatternOrAssignmentTarget::BindingPattern(rest_pattern);
-        let mut all_primitives = true;
-        // Create the access keys.
-        // `let { a, b, ...c } = foo` -> `["a", "b"]`
-        let keys = ctx.ast.vec_from_iter(object_pattern.properties.iter_mut().flat_map(
-            |binding_property| {
-                Self::transform_property_key(
-                    &mut binding_property.key,
-                    builder,
-                    &mut all_primitives,
-                    ctx,
-                )
-            },
-        ));
-        // Remove the object pattern that became empty.
-        // object_pattern.properties.retain(|binding_property| match &binding_property.value.kind {
-        // BindingPatternKind::ObjectPattern(object_pattern) => {
-        // !object_pattern.properties.is_empty()
-        // }
-        // _ => true,
-        // });
-        Datum {
-            lhs,
-            path: vec![],
-            keys,
-            has_no_properties: object_pattern.properties.is_empty(),
-            all_primitives,
         }
     }
 
