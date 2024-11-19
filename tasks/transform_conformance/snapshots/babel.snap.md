@@ -1,6 +1,6 @@
 commit: d20b314c
 
-Passed: 324/610
+Passed: 321/610
 
 # All Passed:
 * babel-plugin-transform-class-static-block
@@ -296,11 +296,14 @@ x Output mismatch
 x Output mismatch
 
 
-# babel-plugin-transform-object-rest-spread (11/36)
+# babel-plugin-transform-object-rest-spread (8/36)
 * object-rest/assignment-expression/input.js
 x Output mismatch
 
 * object-rest/catch-clause/input.js
+x Output mismatch
+
+* object-rest/duplicate-decl-bug/input.js
 x Output mismatch
 
 * object-rest/export/input.mjs
@@ -342,6 +345,9 @@ x Output mismatch
 * object-rest/nested-order/input.js
 x Output mismatch
 
+* object-rest/null-destructuring/input.js
+x Output mismatch
+
 * object-rest/object-ref-computed/input.js
 x Output mismatch
 
@@ -355,6 +361,9 @@ x Output mismatch
 x Output mismatch
 
 * object-rest/template-literal-allLiterals-true-no-hoisting/input.js
+x Output mismatch
+
+* object-rest/template-literal-property-allLiterals-false/input.js
 x Output mismatch
 
 * object-rest/variable-destructuring/input.js

@@ -763,6 +763,7 @@ impl<'a, 'ctx> ObjectRestSpread<'a, 'ctx> {
 
         let mut builder = DeclsBuilder::new(decl.kind, symbol_flags, scope_id, ctx);
 
+        let is_identifier_reference = init.is_identifier_reference();
         let mut reference_builder = ReferenceBuilder::new(init, symbol_flags, scope_id, false, ctx);
 
         // Add `_foo = foo()`
@@ -783,12 +784,17 @@ impl<'a, 'ctx> ObjectRestSpread<'a, 'ctx> {
             // Example: `let { x, ...rest } = foo();`.
             BindingPatternKind::ObjectPattern(pat) => {
                 // Walk the properties that may contain a nested rest spread.
+                let data = pat
+                    .properties
+                    .iter_mut()
+                    .flat_map(|p| {
+                        self.recursive_walk_binding_pattern(&mut p.value, &mut builder, ctx)
+                    })
+                    .collect::<Vec<_>>();
+                builder.decls.extend(data);
 
+                // Transform the object pattern with a rest pattern.
                 if let Some(rest) = pat.rest.take() {
-                    for p in pat.properties.iter_mut() {
-                        self.recursive_walk_binding_pattern(&mut p.value, &mut builder, ctx);
-                    }
-                    // Transform the object pattern with a rest pattern.
                     let lhs =
                         BindingPatternOrAssignmentTarget::BindingPattern(rest.unbox().argument);
                     let mut all_primitives = true;
@@ -804,35 +810,12 @@ impl<'a, 'ctx> ObjectRestSpread<'a, 'ctx> {
                             )
                         },
                     ));
-                    // Remove the object pattern that became empty.
-                    // object_pattern.properties.retain(|binding_property| match &binding_property.value.kind {
-                    // BindingPatternKind::ObjectPattern(object_pattern) => {
-                    // !object_pattern.properties.is_empty()
-                    // }
-                    // _ => true,
-                    // });
                     let datum = Datum {
                         lhs,
                         path: vec![],
                         keys,
                         has_no_properties: pat.properties.is_empty(),
                         all_primitives,
-                    };
-
-                    // Add `{ x } = foo`.
-                    if !pat.properties.is_empty() {
-                        let binding_pattern_kind = ctx.ast.binding_pattern_kind_object_pattern(
-                            pat.span,
-                            ctx.ast.move_vec(&mut pat.properties),
-                            NONE,
-                        );
-                        builder.decls.push(ctx.ast.variable_declarator(
-                            decl.span,
-                            decl.kind,
-                            ctx.ast.binding_pattern(binding_pattern_kind, NONE, false),
-                            Some(reference_builder.create_read_expression(ctx)),
-                            false,
-                        ));
                     };
                     // Add `rest = babelHelpers.extends({}, (babelHelpers.objectDestructuringEmpty(_foo), _foo))`.
                     // Or `rest = babelHelpers.objectWithoutProperties(_foo, ["x"])`.
@@ -853,37 +836,27 @@ impl<'a, 'ctx> ObjectRestSpread<'a, 'ctx> {
                         builder.decls.push(decl);
                     }
                 }
-
-                // let mut binding_pattern_kind =
-                // ctx.ast.binding_pattern_kind_object_pattern(decl.span, ctx.ast.vec(), NONE);
-                // mem::swap(&mut binding_pattern_kind, &mut decl.id.kind);
-                // let decl = ctx.ast.variable_declarator(
-                // decl.span,
-                // decl.kind,
-                // ctx.ast.binding_pattern(binding_pattern_kind, NONE, false),
-                // Some(ctx.ast.move_expression(init)),
-                // false,
-                // );
-                // builder.decls.insert(index, decl);
             }
             _ => {
-                self.recursive_walk_binding_pattern(&mut decl.id, &mut builder, ctx);
+                let data = self.recursive_walk_binding_pattern(&mut decl.id, &mut builder, ctx);
+                builder.decls.extend(data);
             }
         }
 
         // Insert the original declarator by copying its data out.
-        let mut binding_pattern_kind =
-            ctx.ast.binding_pattern_kind_object_pattern(decl.span, ctx.ast.vec(), NONE);
-        mem::swap(&mut binding_pattern_kind, &mut decl.id.kind);
-        let decl = ctx.ast.variable_declarator(
-            decl.span,
-            decl.kind,
-            ctx.ast.binding_pattern(binding_pattern_kind, NONE, false),
-            Some(reference_builder.create_read_expression(ctx)),
-            false,
-        );
-        builder.decls.insert(index, decl);
-
+        if !is_identifier_reference {
+            let mut binding_pattern_kind =
+                ctx.ast.binding_pattern_kind_object_pattern(decl.span, ctx.ast.vec(), NONE);
+            mem::swap(&mut binding_pattern_kind, &mut decl.id.kind);
+            let decl = ctx.ast.variable_declarator(
+                decl.span,
+                decl.kind,
+                ctx.ast.binding_pattern(binding_pattern_kind, NONE, false),
+                Some(reference_builder.create_read_expression(ctx)),
+                false,
+            );
+            builder.decls.insert(index, decl);
+        }
         builder.decls
     }
 
@@ -892,31 +865,40 @@ impl<'a, 'ctx> ObjectRestSpread<'a, 'ctx> {
         pat: &mut BindingPattern<'a>,
         builder: &mut DeclsBuilder<'a>,
         ctx: &mut TraverseCtx<'a>,
-    ) {
+    ) -> Vec<VariableDeclarator<'a>> {
         match &mut pat.kind {
-            BindingPatternKind::BindingIdentifier(_) => {}
-            BindingPatternKind::ArrayPattern(array_pat) => {
-                for p in array_pat.elements.iter_mut().flatten() {
-                    self.recursive_walk_binding_pattern(p, builder, ctx);
-                }
-            }
+            BindingPatternKind::BindingIdentifier(_) => vec![],
+            BindingPatternKind::ArrayPattern(array_pat) => array_pat
+                .elements
+                .iter_mut()
+                .flatten()
+                .flat_map(|p| self.recursive_walk_binding_pattern(p, builder, ctx))
+                .collect::<Vec<_>>(),
             BindingPatternKind::AssignmentPattern(assign_pat) => {
-                self.recursive_walk_binding_pattern(&mut assign_pat.left, builder, ctx);
+                self.recursive_walk_binding_pattern(&mut assign_pat.left, builder, ctx)
             }
             BindingPatternKind::ObjectPattern(p) => {
-                for p in p.properties.iter_mut() {
-                    self.recursive_walk_binding_pattern(&mut p.value, builder, ctx);
-                }
+                let data = p
+                    .properties
+                    .iter_mut()
+                    .flat_map(|p| self.recursive_walk_binding_pattern(&mut p.value, builder, ctx))
+                    .collect::<Vec<_>>();
                 if p.rest.is_some() {
                     let bound_identifier =
                         ctx.generate_uid("ref", builder.scope_id, builder.symbol_flags);
                     let id = mem::replace(pat, bound_identifier.create_binding_pattern(ctx));
+
                     let init = bound_identifier.create_read_expression(ctx);
                     let mut decl =
                         ctx.ast.variable_declarator(SPAN, builder.kind, id, Some(init), false);
-                    builder.decls.extend(self.transform_variable_declarator(&mut decl, ctx));
-                    return;
+                    let mut decls = self
+                        .transform_variable_declarator(&mut decl, ctx)
+                        .into_iter()
+                        .collect::<Vec<_>>();
+                    decls.extend(data);
+                    return decls;
                 }
+                data
             }
         }
     }

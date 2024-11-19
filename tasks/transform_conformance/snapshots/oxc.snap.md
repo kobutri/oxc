@@ -1,6 +1,6 @@
 commit: d20b314c
 
-Passed: 86/99
+Passed: 85/99
 
 # All Passed:
 * babel-plugin-transform-class-static-block
@@ -15,7 +15,7 @@ Passed: 86/99
 * regexp
 
 
-# babel-plugin-transform-object-rest-spread (1/4)
+# babel-plugin-transform-object-rest-spread (0/4)
 * object-rest/complex/input.js
 x Output mismatch
 
@@ -23,6 +23,9 @@ x Output mismatch
 x Output mismatch
 
 * object-rest/keys/input.js
+x Output mismatch
+
+* object-rest/simple/input.js
 x Output mismatch
 
 
