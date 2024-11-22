@@ -14,7 +14,7 @@ pub struct DeriveGetSpan;
 define_derive!(DeriveGetSpan);
 
 impl Derive for DeriveGetSpan {
-    fn id() -> DeriveId {
+    fn id(&self) -> DeriveId {
         DeriveId::GetSpan
     }
 
@@ -26,7 +26,7 @@ impl Derive for DeriveGetSpan {
         let reference = |it| quote!(&#it);
 
         derive(
-            Self::trait_name(),
+            self.trait_name(),
             "span",
             &self_type,
             &result_type,
@@ -37,7 +37,7 @@ impl Derive for DeriveGetSpan {
         )
     }
 
-    fn prelude() -> TokenStream {
+    fn prelude(&self) -> TokenStream {
         quote! {
             #![allow(clippy::match_same_arms)]
 
@@ -52,7 +52,7 @@ pub struct DeriveGetSpanMut;
 define_derive!(DeriveGetSpanMut);
 
 impl Derive for DeriveGetSpanMut {
-    fn id() -> DeriveId {
+    fn id(&self) -> DeriveId {
         DeriveId::GetSpanMut
     }
 
@@ -64,7 +64,7 @@ impl Derive for DeriveGetSpanMut {
         let reference = |it| quote!(&mut #it);
 
         derive(
-            Self::trait_name(),
+            self.trait_name(),
             "span_mut",
             &self_type,
             &result_type,
@@ -75,7 +75,7 @@ impl Derive for DeriveGetSpanMut {
         )
     }
 
-    fn prelude() -> TokenStream {
+    fn prelude(&self) -> TokenStream {
         quote! {
             #![allow(clippy::match_same_arms)]
 

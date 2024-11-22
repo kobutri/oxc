@@ -18,11 +18,11 @@ pub struct DeriveESTree;
 define_derive!(DeriveESTree);
 
 impl Derive for DeriveESTree {
-    fn id() -> DeriveId {
+    fn id(&self) -> DeriveId {
         DeriveId::ESTree
     }
 
-    fn snake_name() -> String {
+    fn snake_name(&self) -> String {
         "estree".to_string()
     }
 
@@ -55,7 +55,7 @@ impl Derive for DeriveESTree {
         }
     }
 
-    fn prelude() -> TokenStream {
+    fn prelude(&self) -> TokenStream {
         quote! {
             #![allow(unused_imports, unused_mut, clippy::match_same_arms)]
 

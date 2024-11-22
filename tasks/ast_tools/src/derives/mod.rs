@@ -44,23 +44,23 @@ pub trait Derive {
     // Methods which can/must be defined by implementer.
 
     /// Get `DeriveId` of this derive.
-    fn id() -> DeriveId;
+    fn id(&self) -> DeriveId;
 
     /// Get trait name.
     ///
     /// Defaults to stringified `DeriveId`.
     /// e.g. `DeriveId::CloneIn` -> `"CloneIn"`.
     /// Can be overridden.
-    fn trait_name() -> &'static str {
-        Self::id().name()
+    fn trait_name(&self) -> &'static str {
+        self.id().name()
     }
 
     /// Get snake case trait name.
     ///
     /// Defaults to `trait_name()` converted to snake case.
     /// Can be overridden.
-    fn snake_name() -> String {
-        Self::trait_name().to_case(Case::Snake)
+    fn snake_name(&self) -> String {
+        self.trait_name().to_case(Case::Snake)
     }
 
     /// Generate trait implementation for a type.
@@ -70,14 +70,14 @@ pub trait Derive {
     ///
     /// Defaults to no prelude.
     /// Can be overridden.
-    fn prelude() -> TokenStream {
+    fn prelude(&self) -> TokenStream {
         TokenStream::default()
     }
 
     // Standard methods. Should not be overriden.
 
-    fn template(module_paths: Vec<&str>, impls: TokenStream) -> TokenStream {
-        let prelude = Self::prelude();
+    fn template(&self, module_paths: Vec<&str>, impls: TokenStream) -> TokenStream {
+        let prelude = self.prelude();
 
         // from `x::y::z` to `crate::y::z::*`
         let use_modules = module_paths.into_iter().map(|module_path| {
@@ -105,8 +105,8 @@ pub trait Derive {
     }
 
     fn output(&mut self, schema: &Schema) -> Result<Vec<Output>> {
-        let trait_name = Self::trait_name();
-        let filename = format!("derive_{}.rs", Self::snake_name());
+        let trait_name = self.trait_name();
+        let filename = format!("derive_{}.rs", self.snake_name());
         let output = schema
             .defs
             .iter()
@@ -131,7 +131,7 @@ pub trait Derive {
 
                 let output = Output::Rust {
                     path: output_path(&format!("crates/{krate}"), &filename),
-                    tokens: Self::template(
+                    tokens: self.template(
                         modules,
                         streams.into_iter().fold(TokenStream::new(), |mut acc, it| {
                             acc.extend(quote! {

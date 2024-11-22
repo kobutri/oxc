@@ -21,7 +21,7 @@ const IGNORE_FIELD_TYPES: [/* type name */ &str; 4] = [
 ];
 
 impl Derive for DeriveContentHash {
-    fn id() -> DeriveId {
+    fn id(&self) -> DeriveId {
         DeriveId::ContentHash
     }
 
@@ -34,7 +34,7 @@ impl Derive for DeriveContentHash {
         impl_content_hash(def, hasher, &body)
     }
 
-    fn prelude() -> TokenStream {
+    fn prelude(&self) -> TokenStream {
         quote! {
             #![allow(clippy::match_same_arms)]
 

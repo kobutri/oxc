@@ -23,7 +23,7 @@ const IGNORE_FIELDS: [(/* field name */ &str, /* field type */ &str); 6] = [
 ];
 
 impl Derive for DeriveContentEq {
-    fn id() -> DeriveId {
+    fn id(&self) -> DeriveId {
         DeriveId::ContentEq
     }
 
@@ -36,7 +36,7 @@ impl Derive for DeriveContentEq {
         impl_content_eq(def, other, &body)
     }
 
-    fn prelude() -> TokenStream {
+    fn prelude(&self) -> TokenStream {
         quote! {
             // NOTE: writing long match expressions formats better than using `matches` macro.
             #![allow(clippy::match_like_matches_macro)]

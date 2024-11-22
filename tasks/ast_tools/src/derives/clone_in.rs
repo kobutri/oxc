@@ -15,7 +15,7 @@ pub struct DeriveCloneIn;
 define_derive!(DeriveCloneIn);
 
 impl Derive for DeriveCloneIn {
-    fn id() -> DeriveId {
+    fn id(&self) -> DeriveId {
         DeriveId::CloneIn
     }
 
@@ -26,7 +26,7 @@ impl Derive for DeriveCloneIn {
         }
     }
 
-    fn prelude() -> TokenStream {
+    fn prelude(&self) -> TokenStream {
         quote! {
             #![allow(clippy::default_trait_access)]
 
