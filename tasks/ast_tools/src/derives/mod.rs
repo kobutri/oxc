@@ -41,10 +41,13 @@ enum_ids! {
 }
 
 pub trait Derive {
-    // Methods defined by implementer
+    // Methods which can/must be defined by implementer.
 
+    /// Get `DeriveId` of this derive.
     fn id() -> DeriveId;
 
+    /// Get trait name.
+    ///
     /// Defaults to stringified `DeriveId`.
     /// e.g. `DeriveId::CloneIn` -> `"CloneIn"`.
     /// Can be overridden.
@@ -52,17 +55,26 @@ pub trait Derive {
         Self::id().name()
     }
 
+    /// Get snake case trait name.
+    ///
+    /// Defaults to `trait_name()` converted to snake case.
+    /// Can be overridden.
     fn snake_name() -> String {
         Self::trait_name().to_case(Case::Snake)
     }
 
+    /// Generate trait implementation for a type.
     fn derive(&mut self, def: &TypeDef, schema: &Schema) -> TokenStream;
 
+    /// Generate prelude to be output at top of generated files.
+    ///
+    /// Defaults to no prelude.
+    /// Can be overridden.
     fn prelude() -> TokenStream {
         TokenStream::default()
     }
 
-    // Standard methods
+    // Standard methods. Should not be overriden.
 
     fn template(module_paths: Vec<&str>, impls: TokenStream) -> TokenStream {
         let prelude = Self::prelude();
