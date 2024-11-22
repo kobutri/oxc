@@ -39,7 +39,7 @@
 //! * `defs: Vec<TypeDef>` is indexed by `TypeId`.
 //! * `files: Vec<File>` is indexed by `FileId`.
 
-use std::{hash::BuildHasherDefault, path::PathBuf};
+use std::hash::BuildHasherDefault;
 
 use indexmap::{IndexMap, IndexSet};
 use itertools::Itertools;
@@ -94,16 +94,14 @@ fn analyse_file(
 
 /// Convert file path to import path.
 /// `crates/oxc_ast/src/ast/js.rs` -> `oxc_ast::ast::js`.
+/// `crates/oxc_span/src/source_type/mod.rs` -> `oxc_span::source_type`.
 fn get_import_path(file_path: &str) -> String {
-    // Remove extension
-    let path = PathBuf::from(file_path).with_extension("");
-    let path = path.to_string_lossy();
+    let path = file_path.trim_end_matches(".rs").trim_end_matches("/mod");
 
     let mut parts = path.split('/');
     assert_eq!(parts.next(), Some("crates"));
     let krate = parts.next().unwrap();
     assert_eq!(parts.next(), Some("src"));
-    let parts = parts.filter(|&part| part != "mod");
-    let mut parts = [krate].into_iter().chain(parts);
-    parts.join("::")
+
+    [krate].into_iter().chain(parts).join("::")
 }
