@@ -11,13 +11,17 @@ use crate::{
     },
 };
 
-use super::{define_derive, Derive};
+use super::{define_derive, Derive, DeriveId};
 
 pub struct DeriveESTree;
 
 define_derive!(DeriveESTree);
 
 impl Derive for DeriveESTree {
+    fn id() -> DeriveId {
+        DeriveId::ESTree
+    }
+
     fn trait_name() -> &'static str {
         "ESTree"
     }

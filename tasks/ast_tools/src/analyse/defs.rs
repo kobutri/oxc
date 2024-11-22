@@ -1,9 +1,13 @@
 #![expect(dead_code)]
 
-use bitflags::bitflags;
 use syn::{ItemEnum, ItemStruct};
 
-use super::schema::{FileId, TypeId};
+use crate::derives::DeriveId;
+
+use super::{
+    schema::{FileId, TypeId},
+    Derives,
+};
 
 pub type Discriminant = u8;
 
@@ -45,17 +49,17 @@ impl TypeDef {
 
     /// Get all traits which have derives generated for this type.
     #[inline]
-    pub fn generated_derives(&self) -> GeneratedDerives {
+    pub fn generated_derives(&self) -> Derives {
         match self {
             TypeDef::Struct(def) => def.generated_derives,
             TypeDef::Enum(def) => def.generated_derives,
-            _ => GeneratedDerives::empty(),
+            _ => Derives::none(),
         }
     }
 
     /// Get whether a derive is generated for this type.
-    pub fn generates_derive(&self, derive: GeneratedDerives) -> bool {
-        self.generated_derives().contains(derive)
+    pub fn generates_derive(&self, derive_id: DeriveId) -> bool {
+        self.generated_derives().has(derive_id)
     }
 }
 
@@ -65,7 +69,7 @@ pub struct StructDef {
     pub has_lifetime: bool,
     pub fields: Vec<FieldDef>,
     pub is_visitable: bool,
-    pub generated_derives: GeneratedDerives,
+    pub generated_derives: Derives,
     pub file_id: FileId,
     pub item: ItemStruct,
 }
@@ -78,7 +82,7 @@ pub struct EnumDef {
     /// For `@inherits` inherited enum variants
     pub inherits: Vec<TypeId>,
     pub is_visitable: bool,
-    pub generated_derives: GeneratedDerives,
+    pub generated_derives: Derives,
     pub file_id: FileId,
     pub item: ItemEnum,
 }
@@ -124,17 +128,4 @@ pub struct VecDef {
 pub struct CellDef {
     pub name: String,
     pub inner_type_id: TypeId,
-}
-
-bitflags! {
-    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-    pub struct GeneratedDerives: u8 {
-        const CloneIn = 1 << 0;
-        const ContentEq = 1 << 1;
-        const ContentHash = 1 << 2;
-        const ESTree = 1 << 3;
-        const GetSpan = 1 << 4;
-
-        const None = Self::empty().bits();
-    }
 }

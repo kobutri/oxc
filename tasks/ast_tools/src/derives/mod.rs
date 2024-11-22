@@ -8,6 +8,7 @@ use syn::{parse_str, ItemUse};
 use crate::{
     output::{output_path, Output},
     schema::{Schema, TypeDef},
+    util::enum_ids,
     Result,
 };
 
@@ -23,8 +24,27 @@ pub use content_hash::DeriveContentHash;
 pub use estree::DeriveESTree;
 pub use get_span::{DeriveGetSpan, DeriveGetSpanMut};
 
+enum_ids! {
+    /// Derive IDs.
+    ///
+    /// If add a new derive, add it to this list.
+    #[repr(u8)]
+    #[derive(Debug)]
+    pub enum DeriveId {
+        CloneIn = 0,
+        ContentEq = 1,
+        ContentHash = 2,
+        ESTree = 3,
+        GetSpan = 4,
+        GetSpanMut = 5,
+    }
+}
+
 pub trait Derive {
     // Methods defined by implementer
+
+    #[expect(dead_code)]
+    fn id() -> DeriveId;
 
     fn trait_name() -> &'static str;
 

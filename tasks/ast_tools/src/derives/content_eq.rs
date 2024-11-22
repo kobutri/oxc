@@ -7,7 +7,7 @@ use crate::{
     util::ToIdent,
 };
 
-use super::{define_derive, Derive};
+use super::{define_derive, Derive, DeriveId};
 
 pub struct DeriveContentEq;
 
@@ -23,6 +23,10 @@ const IGNORE_FIELDS: [(/* field name */ &str, /* field type */ &str); 6] = [
 ];
 
 impl Derive for DeriveContentEq {
+    fn id() -> DeriveId {
+        DeriveId::ContentEq
+    }
+
     fn trait_name() -> &'static str {
         "ContentEq"
     }

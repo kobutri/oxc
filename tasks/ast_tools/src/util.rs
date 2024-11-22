@@ -313,3 +313,175 @@ where
 pub fn unexpanded_macro_err(mac: &ItemMacro) -> String {
     format!("Unexpanded macro: {:?}:{:?}", mac.ident, mac.span())
 }
+
+/// Macro to implement conversion methods to/from integers for a fieldless enum.
+///
+/// Implements constants `MAX` and `MAX_USIZE` which is the maximum value, and conversion methods
+/// `to_id`, `to_usize`, `from_id`, `from_usize`, `try_from_id` and `try_from_usize`.
+///
+/// Derives `Clone` and `Copy` on the enum.
+///
+/// Enum must have a `#[repr]` attr e.g. `#[repr(u8)]`.
+///
+/// ```
+/// enum_ids! {
+///     /// Foo
+///     #[repr(u8)]
+///     #[derive(Debug)]
+///     pub enum FooId {
+///         Bar = 0,
+///         Qux = 1,
+///         Gim = 2,
+///     }
+/// }
+/// ```
+///
+/// Expands to:
+///
+/// ```
+/// /// Foo
+/// #[repr(u8)]
+/// #[derive(Clone, Copy, Debug)]
+/// pub enum FooId {
+///     Bar = 0,
+///     Qux = 1,
+///     Gim = 2,
+/// }
+///
+/// impl FooId {
+///     const MAX: u8 = 2;
+///     const MAX_USIZE: usize = 2;
+///
+///     #[inline]
+///     pub const fn try_from_id(id: u8) -> Option<Self> {
+///         match n {
+///             0 => Some(Self::Bar),
+///             1 => Some(Self::Qux),
+///             2 => Some(Self::Gim),
+///             _ => None,
+///         }
+///     }
+///
+///     #[inline]
+///     pub const fn from_id(id: u8) -> Self {
+///         if let Some(out) = Self::try_from_id(id) {
+///             out
+///         } else {
+///             panic!("Invalid ID");
+///         }
+///     }
+///
+///     #[inline]
+///     pub const fn try_from_usize(id: usize) -> Option<Self> {
+///         if id > u8::MAX as usize {
+///             None
+///         } else {
+///             Self::try_from_id(id as u8)
+///         }
+///     }
+///
+///     #[inline]
+///     pub const fn from_usize(id: usize) -> Self {
+///         if let Some(out) = Self::try_from_usize(id) {
+///             out
+///         } else {
+///             panic!("Invalid ID");
+///         }
+///     }
+///
+///     #[inline]
+///     pub const fn to_id(self) -> u8 {
+///         self as u8
+///     }
+///
+///     #[inline]
+///     pub const fn to_usize(self) -> usize {
+///         self as usize
+///     }
+/// }
+/// ```
+macro_rules! enum_ids {
+    (
+        $(#[doc = $doc:literal])*
+        #[repr($ty:ident)]
+        $(#[$($attr:tt)+])*
+        $vis:vis enum $name:ident {
+            $($variant:ident = $id:literal,)+
+        }
+    ) => {
+        $(#[doc = $doc])*
+        #[repr($ty)]
+        $(#[$($attr)+])*
+        #[derive(Clone, Copy)]
+        $vis enum $name {
+            $($variant = $id),+
+        }
+
+        impl $name {
+            pub const MAX: $ty = {
+                let ids = &[$($id,)*];
+                let mut max = 0;
+                let mut index = 0;
+                loop {
+                    if index == ids.len() {
+                        break;
+                    }
+                    let value = ids[index];
+                    if value > max {
+                        max = value;
+                    }
+                    index += 1;
+                }
+                max
+            };
+            pub const MAX_USIZE: usize = Self::MAX as usize;
+
+            #[inline]
+            pub const fn try_from_id(id: u8) -> Option<Self> {
+                match id {
+                    $($id => Some(Self::$variant),)+
+                    _ => None,
+                }
+            }
+
+            #[inline]
+            pub const fn from_id(id: u8) -> Self {
+                if let Some(out) = Self::try_from_id(id) {
+                    out
+                } else {
+                    panic!("Invalid ID");
+                }
+            }
+
+            #[inline]
+            #[expect(clippy::cast_possible_truncation)]
+            pub const fn try_from_usize(id: usize) -> Option<Self> {
+                if id > $ty::MAX as usize {
+                    None
+                } else {
+                    Self::try_from_id(id as $ty)
+                }
+            }
+
+            #[inline]
+            pub const fn from_usize(id: usize) -> Self {
+                if let Some(out) = Self::try_from_usize(id) {
+                    out
+                } else {
+                    panic!("Invalid ID");
+                }
+            }
+
+            #[inline]
+            pub const fn to_id(self) -> $ty {
+                self as $ty
+            }
+
+            #[inline]
+            pub const fn to_usize(self) -> usize {
+                self.to_id() as usize
+            }
+        }
+    };
+}
+pub(crate) use enum_ids;

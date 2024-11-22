@@ -48,10 +48,12 @@ use rustc_hash::FxHasher;
 use crate::{log, log_success};
 
 mod defs;
+mod derives;
 mod load;
 mod parse;
 mod schema;
 mod skeleton;
+use derives::Derives;
 use load::load_file;
 use parse::parse;
 use schema::{File, FileId, Schema};

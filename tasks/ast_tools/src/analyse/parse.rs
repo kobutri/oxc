@@ -7,12 +7,12 @@ use syn::{
 
 use super::{
     defs::{
-        BoxDef, CellDef, EnumDef, FieldDef, GeneratedDerives, OptionDef, PrimitiveDef, StructDef,
-        TypeDef, VariantDef, VecDef,
+        BoxDef, CellDef, EnumDef, FieldDef, OptionDef, PrimitiveDef, StructDef, TypeDef,
+        VariantDef, VecDef,
     },
     schema::{File, FileId, Schema, TypeId},
     skeleton::{EnumSkeleton, Skeleton, StructSkeleton},
-    FxIndexMap, FxIndexSet,
+    Derives, FxIndexMap, FxIndexSet,
 };
 
 /// Parse `Skeleton`s into `TypeDef`s.
@@ -103,7 +103,7 @@ impl Parser {
                 has_lifetime: false,
                 fields: vec![FieldDef { name: None, type_id: self.type_id("u8") }],
                 is_visitable: false,
-                generated_derives: GeneratedDerives::None,
+                generated_derives: Derives::none(),
                 file_id: self.get_file_id("oxc_ast::ast::literal"),
                 item: parse_quote! { struct RegExpFlags(u8); },
             }),
@@ -145,7 +145,7 @@ impl Parser {
         let has_lifetime = check_generics(&item.generics, &name);
         let fields = self.parse_fields(&item.fields);
         let is_visitable = check_ast_attr(&item.attrs);
-        let generated_derives = GeneratedDerives::None; // TODO
+        let generated_derives = Derives::none(); // TODO
         TypeDef::Struct(StructDef {
             name,
             has_lifetime,
@@ -164,7 +164,7 @@ impl Parser {
         let variants = item.variants.iter().map(|variant| self.parse_variant(variant)).collect();
         let inherits = inherits.into_iter().map(|name| self.type_id(&name)).collect();
         let is_visitable = check_ast_attr(&item.attrs);
-        let generated_derives = GeneratedDerives::None; // TODO
+        let generated_derives = Derives::none(); // TODO
         TypeDef::Enum(EnumDef {
             name,
             has_lifetime,

@@ -7,13 +7,17 @@ use crate::{
     util::{ToIdent, TypeWrapper},
 };
 
-use super::{define_derive, Derive};
+use super::{define_derive, Derive, DeriveId};
 
 pub struct DeriveGetSpan;
 
 define_derive!(DeriveGetSpan);
 
 impl Derive for DeriveGetSpan {
+    fn id() -> DeriveId {
+        DeriveId::GetSpan
+    }
+
     fn trait_name() -> &'static str {
         "GetSpan"
     }
@@ -52,6 +56,10 @@ pub struct DeriveGetSpanMut;
 define_derive!(DeriveGetSpanMut);
 
 impl Derive for DeriveGetSpanMut {
+    fn id() -> DeriveId {
+        DeriveId::GetSpanMut
+    }
+
     fn trait_name() -> &'static str {
         "GetSpanMut"
     }
