@@ -7,6 +7,7 @@ use syn::parse_file;
 
 mod analyse;
 mod codegen;
+mod codegen2;
 mod derives;
 mod generators;
 mod layout;
@@ -18,6 +19,7 @@ mod rust_ast;
 mod schema;
 mod util;
 
+use codegen2::CodegenBuilder;
 use derives::{
     DeriveCloneIn, DeriveContentEq, DeriveContentHash, DeriveESTree, DeriveGetSpan,
     DeriveGetSpanMut,
@@ -71,6 +73,15 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     if cli_options.quiet {
         logger::quiet().normalize_with("Failed to set logger to `quiet` mode.")?;
     }
+
+    let _codegen = CodegenBuilder::default()
+        .add_derive(DeriveCloneIn)
+        .add_derive(DeriveGetSpan)
+        .add_derive(DeriveGetSpanMut)
+        .add_derive(DeriveContentEq)
+        .add_derive(DeriveContentHash)
+        .add_derive(DeriveESTree)
+        .into_codegen();
 
     // TODO: Work in progress
     analyse::analyse(SOURCE_PATHS);
