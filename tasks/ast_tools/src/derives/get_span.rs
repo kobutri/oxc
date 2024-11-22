@@ -18,6 +18,10 @@ impl Derive for DeriveGetSpan {
         DeriveId::GetSpan
     }
 
+    fn field_attrs(&self) -> &[&'static str] {
+        &["span"]
+    }
+
     fn derive(&mut self, def: &TypeDef, _: &Schema) -> TokenStream {
         let self_type = quote!(&self);
         let result_type = quote!(Span);

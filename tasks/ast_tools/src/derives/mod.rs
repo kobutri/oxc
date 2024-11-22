@@ -63,6 +63,16 @@ pub trait Derive {
         self.trait_name().to_case(Case::Snake)
     }
 
+    /// Attributes on types that this derive uses.
+    fn type_attrs(&self) -> &[&'static str] {
+        &[]
+    }
+
+    /// Attributes on struct fields that this derive uses.
+    fn field_attrs(&self) -> &[&'static str] {
+        &[]
+    }
+
     /// Generate trait implementation for a type.
     fn derive(&mut self, def: &TypeDef, schema: &Schema) -> TokenStream;
 

@@ -19,6 +19,10 @@ impl Derive for DeriveCloneIn {
         DeriveId::CloneIn
     }
 
+    fn field_attrs(&self) -> &[&'static str] {
+        &["clone_in"]
+    }
+
     fn derive(&mut self, def: &TypeDef, _: &Schema) -> TokenStream {
         match &def {
             TypeDef::Enum(it) => derive_enum(it),

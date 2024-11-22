@@ -26,6 +26,10 @@ impl Derive for DeriveESTree {
         "estree".to_string()
     }
 
+    fn type_attrs(&self) -> &[&'static str] {
+        &["estree"]
+    }
+
     fn derive(&mut self, def: &TypeDef, schema: &Schema) -> TokenStream {
         if let TypeDef::Struct(def) = def {
             if def

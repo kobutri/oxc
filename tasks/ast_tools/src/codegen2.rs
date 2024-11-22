@@ -21,13 +21,21 @@ impl CodegenBuilder {
 pub struct Codegen {
     derives: Vec<Option<Box<dyn Derive>>>,
     derives_name_to_id: FxHashMap<&'static str, DeriveId>,
+    #[expect(dead_code)]
+    type_attrs: FxHashMap<&'static str, DeriveId>,
+    #[expect(dead_code)]
+    field_attrs: FxHashMap<&'static str, DeriveId>,
 }
 
 impl Codegen {
     pub fn new(unordered_derives: Vec<Box<dyn Derive>>) -> Self {
-        // Put derives in `Vec` indexed by `DeriveId`
+        // Put derives in `Vec` indexed by `DeriveId`,
+        // Populate hashmap mapping derive name to `DeriveId`.
+        // Populate hashmaps mapping type and field attrs to `DeriveId` which handles them.
         let mut derives = vec![];
         let mut derives_name_to_id = FxHashMap::default();
+        let mut type_attrs = FxHashMap::default();
+        let mut field_attrs = FxHashMap::default();
         for derive in unordered_derives {
             let id = derive.id();
             let index = id.to_usize();
@@ -39,11 +47,30 @@ impl Codegen {
             if let Some(old_derive) = old_derive {
                 panic!("Same derive added twice: {}", old_derive.trait_name());
             }
+            let derive = derives[index].as_ref().unwrap().as_ref();
 
             derives_name_to_id.insert(id.name(), id);
+
+            for &type_attr in derive.type_attrs() {
+                let old_id = type_attrs.insert(type_attr, id);
+                if let Some(old_id) = old_id {
+                    panic!(
+                        "Two derives expect same type attr {type_attr:?}: {old_id:?} and {id:?}"
+                    );
+                }
+            }
+
+            for &field_attr in derive.field_attrs() {
+                let old_id = field_attrs.insert(field_attr, id);
+                if let Some(old_id) = old_id {
+                    panic!(
+                        "Two derives expect same field attr {field_attr:?}: {old_id:?} and {id:?}"
+                    );
+                }
+            }
         }
 
-        Self { derives, derives_name_to_id }
+        Self { derives, derives_name_to_id, type_attrs, field_attrs }
     }
 
     pub fn get_derive(&self, id: DeriveId) -> &dyn Derive {
