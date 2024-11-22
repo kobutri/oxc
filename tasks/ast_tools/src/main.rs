@@ -19,7 +19,7 @@ mod rust_ast;
 mod schema;
 mod util;
 
-use codegen2::CodegenBuilder;
+use codegen2::{Codegen, CodegenBuilder};
 use derives::{
     DeriveCloneIn, DeriveContentEq, DeriveContentHash, DeriveESTree, DeriveGetSpan,
     DeriveGetSpanMut,
@@ -74,7 +74,7 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
         logger::quiet().normalize_with("Failed to set logger to `quiet` mode.")?;
     }
 
-    let _codegen = CodegenBuilder::default()
+    let codegen = CodegenBuilder::default()
         .add_derive(DeriveCloneIn)
         .add_derive(DeriveGetSpan)
         .add_derive(DeriveGetSpanMut)
@@ -84,7 +84,7 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
         .into_codegen();
 
     // TODO: Work in progress
-    analyse::analyse(SOURCE_PATHS);
+    analyse::analyse(SOURCE_PATHS, &codegen);
     return Ok(());
 
     let AstCodegenResult { mut outputs, schema } = SOURCE_PATHS

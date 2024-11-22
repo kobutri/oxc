@@ -1,9 +1,12 @@
 use quote::ToTokens;
 use rustc_hash::FxHashMap;
 use syn::{
-    parse_quote, Attribute, Expr, ExprLit, Field, Fields, GenericArgument, Generics, Ident, Lit,
-    Meta, Path, PathArguments, PathSegment, Type, TypePath, TypeReference, Variant,
+    parse_quote, punctuated::Punctuated, Attribute, Expr, ExprLit, Field, Fields, GenericArgument,
+    Generics, Ident, Lit, Meta, Path, PathArguments, PathSegment, Token, Type, TypePath,
+    TypeReference, Variant,
 };
+
+use crate::Codegen;
 
 use super::{
     defs::{
@@ -16,7 +19,11 @@ use super::{
 };
 
 /// Parse `Skeleton`s into `TypeDef`s.
-pub fn parse(skeletons: FxIndexMap<String, Skeleton>, files: Vec<File>) -> Schema {
+pub fn parse(
+    skeletons: FxIndexMap<String, Skeleton>,
+    files: Vec<File>,
+    codegen: &Codegen,
+) -> Schema {
     // Split `skeletons` into a `IndexSet<String>` (type names) and `Vec<Skeleton>` (skeletons)
     let mut skeletons_vec = Vec::with_capacity(skeletons.len());
     let type_names = skeletons
@@ -27,14 +34,15 @@ pub fn parse(skeletons: FxIndexMap<String, Skeleton>, files: Vec<File>) -> Schem
         })
         .collect();
 
-    let state = Parser::new(type_names, files);
+    let state = Parser::new(type_names, files, codegen);
     state.parse_all(skeletons_vec)
 }
 
 /// Types parser.
-struct Parser {
+struct Parser<'c> {
     type_names: FxIndexSet<String>,
     files: Vec<File>,
+    codegen: &'c Codegen,
     extra_types: Vec<TypeDef>,
     options: FxHashMap<TypeId, TypeId>,
     boxes: FxHashMap<TypeId, TypeId>,
@@ -42,12 +50,13 @@ struct Parser {
     cells: FxHashMap<TypeId, TypeId>,
 }
 
-impl Parser {
+impl<'c> Parser<'c> {
     /// Create `Parser`.
-    fn new(type_names: FxIndexSet<String>, files: Vec<File>) -> Self {
+    fn new(type_names: FxIndexSet<String>, files: Vec<File>, codegen: &'c Codegen) -> Self {
         Self {
             type_names,
             files,
+            codegen,
             extra_types: vec![],
             options: FxHashMap::default(),
             boxes: FxHashMap::default(),
@@ -145,7 +154,7 @@ impl Parser {
         let has_lifetime = check_generics(&item.generics, &name);
         let fields = self.parse_fields(&item.fields);
         let is_visitable = check_ast_attr(&item.attrs);
-        let generated_derives = Derives::none(); // TODO
+        let generated_derives = self.get_generated_derives(&item.attrs);
         TypeDef::Struct(StructDef {
             name,
             has_lifetime,
@@ -164,7 +173,7 @@ impl Parser {
         let variants = item.variants.iter().map(|variant| self.parse_variant(variant)).collect();
         let inherits = inherits.into_iter().map(|name| self.type_id(&name)).collect();
         let is_visitable = check_ast_attr(&item.attrs);
-        let generated_derives = Derives::none(); // TODO
+        let generated_derives = self.get_generated_derives(&item.attrs);
         TypeDef::Enum(EnumDef {
             name,
             has_lifetime,
@@ -297,6 +306,23 @@ impl Parser {
             return None;
         }
         Some(self.type_id("&str"))
+    }
+
+    /// Get derives which are generated with `#[generate_derive(...)]` attrs.
+    fn get_generated_derives(&self, attrs: &[Attribute]) -> Derives {
+        let mut derives = Derives::none();
+        for attr in attrs {
+            if attr.path().is_ident("generate_derive") {
+                let args: Punctuated<Ident, Token![,]> =
+                    attr.parse_args_with(Punctuated::parse_terminated).unwrap();
+                for arg in args {
+                    let derive_id = self.codegen.get_derive_id_by_name(&arg.to_string());
+                    derives = derives.with(derive_id);
+                }
+            }
+        }
+
+        derives
     }
 }
 

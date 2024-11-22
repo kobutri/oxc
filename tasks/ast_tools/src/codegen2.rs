@@ -51,7 +51,9 @@ impl Codegen {
     }
 
     pub fn get_derive_id_by_name(&self, name: &str) -> DeriveId {
-        *self.derives_name_to_id.get(name).unwrap()
+        self.derives_name_to_id.get(name).copied().unwrap_or_else(|| {
+            panic!("Unknown derive trait {name:?}");
+        })
     }
 
     #[expect(dead_code)]

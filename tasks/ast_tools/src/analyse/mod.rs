@@ -45,7 +45,7 @@ use indexmap::{IndexMap, IndexSet};
 use itertools::Itertools;
 use rustc_hash::FxHasher;
 
-use crate::{log, log_success};
+use crate::{log, log_success, Codegen};
 
 mod defs;
 mod derives;
@@ -63,7 +63,7 @@ type FxIndexMap<K, V> = IndexMap<K, V, BuildHasherDefault<FxHasher>>;
 type FxIndexSet<K> = IndexSet<K, BuildHasherDefault<FxHasher>>;
 
 /// Analyse the files with provided paths, and generate a `Schema`.
-pub fn analyse(file_paths: &[&str]) -> Schema {
+pub fn analyse(file_paths: &[&str], codegen: &Codegen) -> Schema {
     // Load files and populate `Vec` of skeletons + mapping from type name to `TypeId`.
     // `TypeId` is index into `skeletons`.
     let mut skeletons = FxIndexMap::default();
@@ -75,7 +75,7 @@ pub fn analyse(file_paths: &[&str]) -> Schema {
         .collect::<Vec<_>>();
 
     // Convert skeletons into schema
-    parse(skeletons, files)
+    parse(skeletons, files, codegen)
 }
 
 /// Analyse file with provided path and add types to `skeletons`.
