@@ -22,10 +22,6 @@ impl Derive for DeriveESTree {
         DeriveId::ESTree
     }
 
-    fn trait_name() -> &'static str {
-        "ESTree"
-    }
-
     fn snake_name() -> String {
         "estree".to_string()
     }

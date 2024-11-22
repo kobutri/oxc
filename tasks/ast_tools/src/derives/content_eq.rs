@@ -27,10 +27,6 @@ impl Derive for DeriveContentEq {
         DeriveId::ContentEq
     }
 
-    fn trait_name() -> &'static str {
-        "ContentEq"
-    }
-
     fn derive(&mut self, def: &TypeDef, _: &Schema) -> TokenStream {
         let (other, body) = match &def {
             TypeDef::Enum(it) => derive_enum(it),

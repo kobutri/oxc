@@ -25,10 +25,6 @@ impl Derive for DeriveContentHash {
         DeriveId::ContentHash
     }
 
-    fn trait_name() -> &'static str {
-        "ContentHash"
-    }
-
     fn derive(&mut self, def: &TypeDef, _: &Schema) -> TokenStream {
         let (hasher, body) = match &def {
             TypeDef::Enum(it) => derive_enum(it),

@@ -319,6 +319,8 @@ pub fn unexpanded_macro_err(mac: &ItemMacro) -> String {
 /// Implements constants `MAX` and `MAX_USIZE` which is the maximum value, and conversion methods
 /// `to_id`, `to_usize`, `from_id`, `from_usize`, `try_from_id` and `try_from_usize`.
 ///
+/// Also implements `name` method.
+///
 /// Derives `Clone` and `Copy` on the enum.
 ///
 /// Enum must have a `#[repr]` attr e.g. `#[repr(u8)]`.
@@ -397,6 +399,15 @@ pub fn unexpanded_macro_err(mac: &ItemMacro) -> String {
 ///     #[inline]
 ///     pub const fn to_usize(self) -> usize {
 ///         self as usize
+///     }
+///
+///     #[inline]
+///     pub const fn name(self) -> &'static str {
+///         match self {
+///             Self::Bar => "Bar",
+///             Self::Qux => "Qux",
+///             Self::Gim => "Gim",
+///         }
 ///     }
 /// }
 /// ```
@@ -480,6 +491,13 @@ macro_rules! enum_ids {
             #[inline]
             pub const fn to_usize(self) -> usize {
                 self.to_id() as usize
+            }
+
+            #[inline]
+            pub const fn name(self) -> &'static str {
+                match self {
+                    $(Self::$variant => stringify!($variant),)+
+                }
             }
         }
     };

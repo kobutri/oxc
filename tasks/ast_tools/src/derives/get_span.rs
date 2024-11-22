@@ -18,10 +18,6 @@ impl Derive for DeriveGetSpan {
         DeriveId::GetSpan
     }
 
-    fn trait_name() -> &'static str {
-        "GetSpan"
-    }
-
     fn derive(&mut self, def: &TypeDef, _: &Schema) -> TokenStream {
         let self_type = quote!(&self);
         let result_type = quote!(Span);
@@ -58,10 +54,6 @@ define_derive!(DeriveGetSpanMut);
 impl Derive for DeriveGetSpanMut {
     fn id() -> DeriveId {
         DeriveId::GetSpanMut
-    }
-
-    fn trait_name() -> &'static str {
-        "GetSpanMut"
     }
 
     fn derive(&mut self, def: &TypeDef, _: &Schema) -> TokenStream {

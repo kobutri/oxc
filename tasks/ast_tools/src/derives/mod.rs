@@ -43,10 +43,14 @@ enum_ids! {
 pub trait Derive {
     // Methods defined by implementer
 
-    #[expect(dead_code)]
     fn id() -> DeriveId;
 
-    fn trait_name() -> &'static str;
+    /// Defaults to stringified `DeriveId`.
+    /// e.g. `DeriveId::CloneIn` -> `"CloneIn"`.
+    /// Can be overridden.
+    fn trait_name() -> &'static str {
+        Self::id().name()
+    }
 
     fn snake_name() -> String {
         Self::trait_name().to_case(Case::Snake)

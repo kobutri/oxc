@@ -19,10 +19,6 @@ impl Derive for DeriveCloneIn {
         DeriveId::CloneIn
     }
 
-    fn trait_name() -> &'static str {
-        "CloneIn"
-    }
-
     fn derive(&mut self, def: &TypeDef, _: &Schema) -> TokenStream {
         match &def {
             TypeDef::Enum(it) => derive_enum(it),
