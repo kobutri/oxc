@@ -47,6 +47,11 @@ pub trait Derive: Sync {
         &[]
     }
 
+    /// Attributes on enum variants that this derive uses.
+    fn variant_attrs(&self) -> &[&'static str] {
+        &[]
+    }
+
     /// Generate trait implementation for a type.
     fn derive(&mut self, def: &TypeDef, schema: &Schema) -> TokenStream;
 
