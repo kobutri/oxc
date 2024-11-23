@@ -8,15 +8,15 @@ use crate::{
     schema::{EnumDef, GetIdent, Schema, StructDef, TypeDef},
 };
 
-use super::{define_derive, Derive, DeriveId};
+use super::{define_derive, Derive};
 
 pub struct DeriveCloneIn;
 
 define_derive!(DeriveCloneIn);
 
 impl Derive for DeriveCloneIn {
-    fn id(&self) -> DeriveId {
-        DeriveId::CloneIn
+    fn trait_name(&self) -> &'static str {
+        "CloneIn"
     }
 
     fn field_attrs(&self) -> &[&'static str] {

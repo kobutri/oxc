@@ -52,7 +52,7 @@ const TYPESCRIPT_PACKAGE: &str = "npm/oxc-types";
 const GITHUB_WATCH_LIST_PATH: &str = ".github/.generated_ast_watch_list.yml";
 const SCHEMA_PATH: &str = "schema.json";
 
-static DERIVES: &[&dyn Derive] = &[
+const DERIVES: &[&dyn Derive] = &[
     &DeriveCloneIn,
     &DeriveGetSpan,
     &DeriveGetSpanMut,

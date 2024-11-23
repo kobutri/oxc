@@ -8,7 +8,6 @@ use syn::{parse_str, ItemUse};
 use crate::{
     output::{output_path, Output},
     schema::{Schema, TypeDef},
-    util::id_enum,
     Result,
 };
 
@@ -24,36 +23,11 @@ pub use content_hash::DeriveContentHash;
 pub use estree::DeriveESTree;
 pub use get_span::{DeriveGetSpan, DeriveGetSpanMut};
 
-id_enum! {
-    /// Derive IDs.
-    ///
-    /// If add a new derive, add it to this list.
-    #[repr(u8)]
-    #[derive(Debug)]
-    pub enum DeriveId {
-        CloneIn,
-        ContentEq,
-        ContentHash,
-        ESTree,
-        GetSpan,
-        GetSpanMut,
-    }
-}
-
 pub trait Derive: Sync {
     // Methods which can/must be defined by implementer.
 
-    /// Get `DeriveId` of this derive.
-    fn id(&self) -> DeriveId;
-
     /// Get trait name.
-    ///
-    /// Defaults to stringified `DeriveId`.
-    /// e.g. `DeriveId::CloneIn` -> `"CloneIn"`.
-    /// Can be overridden.
-    fn trait_name(&self) -> &'static str {
-        self.id().name()
-    }
+    fn trait_name(&self) -> &'static str;
 
     /// Get snake case trait name.
     ///

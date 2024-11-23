@@ -59,6 +59,8 @@ use parse::parse;
 use schema::{File, FileId, Schema};
 use skeleton::Skeleton;
 
+pub type DeriveId = usize;
+
 type FxIndexMap<K, V> = IndexMap<K, V, BuildHasherDefault<FxHasher>>;
 type FxIndexSet<K> = IndexSet<K, BuildHasherDefault<FxHasher>>;
 

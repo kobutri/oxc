@@ -7,15 +7,15 @@ use crate::{
     util::{ToIdent, TypeWrapper},
 };
 
-use super::{define_derive, Derive, DeriveId};
+use super::{define_derive, Derive};
 
 pub struct DeriveGetSpan;
 
 define_derive!(DeriveGetSpan);
 
 impl Derive for DeriveGetSpan {
-    fn id(&self) -> DeriveId {
-        DeriveId::GetSpan
+    fn trait_name(&self) -> &'static str {
+        "GetSpan"
     }
 
     fn field_attrs(&self) -> &[&'static str] {
@@ -56,8 +56,8 @@ pub struct DeriveGetSpanMut;
 define_derive!(DeriveGetSpanMut);
 
 impl Derive for DeriveGetSpanMut {
-    fn id(&self) -> DeriveId {
-        DeriveId::GetSpanMut
+    fn trait_name(&self) -> &'static str {
+        "GetSpanMut"
     }
 
     fn derive(&mut self, def: &TypeDef, _: &Schema) -> TokenStream {

@@ -7,7 +7,7 @@ use crate::{
     util::ToIdent,
 };
 
-use super::{define_derive, Derive, DeriveId};
+use super::{define_derive, Derive};
 
 pub struct DeriveContentHash;
 
@@ -21,8 +21,8 @@ const IGNORE_FIELD_TYPES: [/* type name */ &str; 4] = [
 ];
 
 impl Derive for DeriveContentHash {
-    fn id(&self) -> DeriveId {
-        DeriveId::ContentHash
+    fn trait_name(&self) -> &'static str {
+        "ContentHash"
     }
 
     fn derive(&mut self, def: &TypeDef, _: &Schema) -> TokenStream {

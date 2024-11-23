@@ -1,9 +1,11 @@
 use std::fmt::{self, Debug};
 
-use crate::derives::DeriveId;
+use crate::DERIVES;
+
+use super::DeriveId;
 
 /// Number of bytes required for bit set which can represent all `DeriveId`s.
-const NUM_BYTES: usize = (DeriveId::MAX_VALUE as usize / 8) + 1;
+const NUM_BYTES: usize = (DERIVES.len() + 7) / 8;
 
 /// Bit set with a bit for each `DeriveId`.
 #[derive(Clone, Copy)]
@@ -17,8 +19,8 @@ impl Derives {
     pub const fn all() -> Self {
         let mut out = Self::none();
         let mut index = 0;
-        while index <= DeriveId::VARIANTS.len() {
-            out = out.with(DeriveId::VARIANTS[index]);
+        while index < DERIVES.len() {
+            out = out.with(index);
             index += 1;
         }
         out
@@ -50,8 +52,7 @@ impl Derives {
     }
 
     const fn byte_index_and_mask(id: DeriveId) -> (usize, u8) {
-        let value = id.to_usize();
-        (value / 8, 1u8 << (value & 7))
+        (id / 8, 1u8 << (id & 7))
     }
 }
 
@@ -75,12 +76,12 @@ impl IntoIterator for &Derives {
 
 pub struct DerivesIter {
     derives: Derives,
-    index: usize,
+    id: DeriveId,
 }
 
 impl DerivesIter {
     fn new(derives: Derives) -> Self {
-        Self { derives, index: 0 }
+        Self { derives, id: 0 }
     }
 }
 
@@ -88,9 +89,9 @@ impl Iterator for DerivesIter {
     type Item = DeriveId;
 
     fn next(&mut self) -> Option<DeriveId> {
-        while self.index < DeriveId::VARIANTS.len() {
-            let id = DeriveId::VARIANTS[self.index];
-            self.index += 1;
+        while self.id < DERIVES.len() {
+            let id = self.id;
+            self.id += 1;
 
             if self.derives.has(id) {
                 return Some(id);
@@ -103,6 +104,6 @@ impl Iterator for DerivesIter {
 
 impl Debug for Derives {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_list().entries(self).finish()
+        f.debug_list().entries(self.into_iter().map(|id| DERIVES[id].trait_name())).finish()
     }
 }

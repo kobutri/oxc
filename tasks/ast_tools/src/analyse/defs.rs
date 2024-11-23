@@ -2,11 +2,9 @@
 
 use syn::{ItemEnum, ItemStruct};
 
-use crate::derives::DeriveId;
-
 use super::{
     schema::{FileId, TypeId},
-    Derives,
+    DeriveId, Derives,
 };
 
 pub type Discriminant = u8;
