@@ -8,7 +8,7 @@ use syn::{parse_str, ItemUse};
 use crate::{
     output::{output_path, Output},
     schema::{Schema, TypeDef},
-    util::enum_ids,
+    util::id_enum,
     Result,
 };
 
@@ -24,7 +24,7 @@ pub use content_hash::DeriveContentHash;
 pub use estree::DeriveESTree;
 pub use get_span::{DeriveGetSpan, DeriveGetSpanMut};
 
-enum_ids! {
+id_enum! {
     /// Derive IDs.
     ///
     /// If add a new derive, add it to this list.

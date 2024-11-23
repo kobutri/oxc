@@ -327,7 +327,7 @@ pub fn unexpanded_macro_err(mac: &ItemMacro) -> String {
 /// Enum must have a `#[repr]` attr e.g. `#[repr(u8)]`.
 ///
 /// ```
-/// enum_ids! {
+/// id_enum! {
 ///     /// Foo
 ///     #[repr(u8)]
 ///     #[derive(Debug)]
@@ -424,7 +424,7 @@ pub fn unexpanded_macro_err(mac: &ItemMacro) -> String {
 ///     }
 /// }
 /// ```
-macro_rules! enum_ids {
+macro_rules! id_enum {
     (
         $(#[doc = $doc:literal])*
         #[repr($ty:ident)]
@@ -526,4 +526,4 @@ macro_rules! enum_ids {
         }
     };
 }
-pub(crate) use enum_ids;
+pub(crate) use id_enum;
