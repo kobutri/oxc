@@ -19,9 +19,9 @@ mod rust_ast;
 mod schema;
 mod util;
 
-use codegen2::{Codegen, CodegenBuilder};
+use codegen2::Codegen;
 use derives::{
-    DeriveCloneIn, DeriveContentEq, DeriveContentHash, DeriveESTree, DeriveGetSpan,
+    Derive, DeriveCloneIn, DeriveContentEq, DeriveContentHash, DeriveESTree, DeriveGetSpan,
     DeriveGetSpanMut,
 };
 use generators::{
@@ -52,6 +52,15 @@ const TYPESCRIPT_PACKAGE: &str = "npm/oxc-types";
 const GITHUB_WATCH_LIST_PATH: &str = ".github/.generated_ast_watch_list.yml";
 const SCHEMA_PATH: &str = "schema.json";
 
+static DERIVES: &[&dyn Derive] = &[
+    &DeriveCloneIn,
+    &DeriveGetSpan,
+    &DeriveGetSpanMut,
+    &DeriveContentEq,
+    &DeriveContentHash,
+    &DeriveESTree,
+];
+
 type Result<R> = std::result::Result<R, String>;
 type TypeId = usize;
 
@@ -74,14 +83,7 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
         logger::quiet().normalize_with("Failed to set logger to `quiet` mode.")?;
     }
 
-    let codegen = CodegenBuilder::default()
-        .add_derive(DeriveCloneIn)
-        .add_derive(DeriveGetSpan)
-        .add_derive(DeriveGetSpanMut)
-        .add_derive(DeriveContentEq)
-        .add_derive(DeriveContentHash)
-        .add_derive(DeriveESTree)
-        .into_codegen();
+    let codegen = Codegen::new();
 
     // TODO: Work in progress
     analyse::analyse(SOURCE_PATHS, &codegen);

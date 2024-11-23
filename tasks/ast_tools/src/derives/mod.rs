@@ -40,7 +40,7 @@ id_enum! {
     }
 }
 
-pub trait Derive {
+pub trait Derive: Sync {
     // Methods which can/must be defined by implementer.
 
     /// Get `DeriveId` of this derive.

@@ -1,25 +1,14 @@
+use std::ops::Deref;
+
 use rustc_hash::FxHashMap;
 
-use crate::derives::{Derive, DeriveId};
-
-#[derive(Default)]
-pub struct CodegenBuilder {
-    derives: Vec<Box<dyn Derive>>,
-}
-
-impl CodegenBuilder {
-    pub fn add_derive<D: Derive + 'static>(mut self, derive: D) -> Self {
-        self.derives.push(Box::new(derive));
-        self
-    }
-
-    pub fn into_codegen(self) -> Codegen {
-        Codegen::new(self.derives)
-    }
-}
+use crate::{
+    derives::{Derive, DeriveId},
+    DERIVES,
+};
 
 pub struct Codegen {
-    derives: Vec<Option<Box<dyn Derive>>>,
+    derives: Vec<Option<&'static dyn Derive>>,
     derives_name_to_id: FxHashMap<&'static str, DeriveId>,
     #[expect(dead_code)]
     type_attrs: FxHashMap<&'static str, DeriveId>,
@@ -28,7 +17,7 @@ pub struct Codegen {
 }
 
 impl Codegen {
-    pub fn new(unordered_derives: Vec<Box<dyn Derive>>) -> Self {
+    pub fn new() -> Self {
         // Put derives in `Vec` indexed by `DeriveId`,
         // Populate hashmap mapping derive name to `DeriveId`.
         // Populate hashmaps mapping type and field attrs to `DeriveId` which handles them.
@@ -36,7 +25,7 @@ impl Codegen {
         let mut derives_name_to_id = FxHashMap::default();
         let mut type_attrs = FxHashMap::default();
         let mut field_attrs = FxHashMap::default();
-        for derive in unordered_derives {
+        for &derive in DERIVES {
             let id = derive.id();
             let index = id.to_usize();
             while derives.len() < index + 1 {
@@ -47,7 +36,7 @@ impl Codegen {
             if let Some(old_derive) = old_derive {
                 panic!("Same derive added twice: {}", old_derive.trait_name());
             }
-            let derive = derives[index].as_ref().unwrap().as_ref();
+            let derive = derives[index].as_ref().unwrap();
 
             derives_name_to_id.insert(id.name(), id);
 
@@ -73,8 +62,8 @@ impl Codegen {
         Self { derives, derives_name_to_id, type_attrs, field_attrs }
     }
 
-    pub fn get_derive(&self, id: DeriveId) -> &dyn Derive {
-        self.derives[id.to_usize()].as_ref().unwrap().as_ref()
+    pub fn get_derive(&self, id: DeriveId) -> &'static dyn Derive {
+        *self.derives[id.to_usize()].as_ref().unwrap()
     }
 
     pub fn get_derive_id_by_name(&self, name: &str) -> DeriveId {
@@ -90,6 +79,6 @@ impl Codegen {
 
     #[expect(dead_code)]
     pub fn derives(&self) -> impl Iterator<Item = &dyn Derive> {
-        self.derives.iter().filter_map(Option::as_ref).map(AsRef::as_ref)
+        self.derives.iter().filter_map(Option::as_ref).map(Deref::deref)
     }
 }
