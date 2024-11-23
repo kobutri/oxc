@@ -324,11 +324,11 @@ pub fn unexpanded_macro_err(mac: &ItemMacro) -> String {
 ///
 /// Derives `Clone` and `Copy` on the enum.
 ///
-/// Enum must have a `#[repr]` attr e.g. `#[repr(u8)]`.
+/// Enum must have a `#[repr]` attr (e.g. `#[repr(u8)]`), and it must be before any other attrs.
 ///
 /// ```
 /// id_enum! {
-///     /// Foo
+///     /// `FooId` is blah blah blah.
 ///     #[repr(u8)]
 ///     #[derive(Debug)]
 ///     pub enum FooId {
@@ -342,7 +342,7 @@ pub fn unexpanded_macro_err(mac: &ItemMacro) -> String {
 /// Expands to:
 ///
 /// ```
-/// /// Foo
+/// /// `FooId` is blah blah blah.
 /// #[repr(u8)]
 /// #[derive(Clone, Copy, Debug)]
 /// pub enum FooId {
@@ -449,7 +449,7 @@ macro_rules! id_enum {
         };
 
         impl $name {
-            pub const VARIANTS: &[Self] = &[$(Self::$variant),*];
+            pub const VARIANTS: &[Self] = &[$(Self::$variant),+];
             pub const MAX_VALUE: $repr = {
                 let mut max = 0;
                 let mut index = 0;
