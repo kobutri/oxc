@@ -318,7 +318,7 @@ pub fn unexpanded_macro_err(mac: &ItemMacro) -> String {
 ///
 /// Implements:
 /// * Constant `VARIANTS` - array of all variants.
-/// * Constant `MAX` - the maximum value.
+/// * Constant `MAX_VALUE` - the maximum value.
 /// * Conversion methods `to_id`, `to_usize`, `from_id`, `from_usize`, `try_from_id`, `try_from_usize`.
 /// * Method `name`
 ///
@@ -332,9 +332,9 @@ pub fn unexpanded_macro_err(mac: &ItemMacro) -> String {
 ///     #[repr(u8)]
 ///     #[derive(Debug)]
 ///     pub enum FooId {
-///         Bar = 0,
-///         Qux = 1,
-///         Gim = 2,
+///         Bar,
+///         Qux,
+///         Gim,
 ///     }
 /// }
 /// ```
@@ -346,21 +346,26 @@ pub fn unexpanded_macro_err(mac: &ItemMacro) -> String {
 /// #[repr(u8)]
 /// #[derive(Clone, Copy, Debug)]
 /// pub enum FooId {
-///     Bar = 0,
-///     Qux = 1,
-///     Gim = 2,
+///     Bar,
+///     Qux,
+///     Gim,
 /// }
 ///
 /// impl FooId {
 ///     pub const VARIANTS: &[Self] = &[Self::Bar, Self::Qux, Self::Gim];
-///     pub const MAX: u8 = 2;
+///     pub const MAX_VALUE: u8 = 2;
 ///
 ///     #[inline]
+///     #[allow(non_upper_case_globals)]
 ///     pub const fn try_from_id(id: u8) -> Option<Self> {
+///         const ID_Bar: u8 = FooId::Bar as u8;
+///         const ID_Qux: u8 = FooId::Qux as u8;
+///         const ID_Gim: u8 = FooId::Gim as u8;
+///
 ///         match n {
-///             0 => Some(Self::Bar),
-///             1 => Some(Self::Qux),
-///             2 => Some(Self::Gim),
+///             ID_Bar => Some(Self::Bar),
+///             ID_Qux => Some(Self::Qux),
+///             ID_Gim => Some(Self::Gim),
 ///             _ => None,
 ///         }
 ///     }
@@ -418,7 +423,7 @@ macro_rules! enum_ids {
         #[repr($ty:ident)]
         $(#[$($attr:tt)+])*
         $vis:vis enum $name:ident {
-            $($variant:ident = $id:literal,)+
+            $($variant:ident $(= $id:literal)?,)+
         }
     ) => {
         $(#[doc = $doc])*
@@ -426,12 +431,12 @@ macro_rules! enum_ids {
         $(#[$($attr)+])*
         #[derive(Clone, Copy)]
         $vis enum $name {
-            $($variant = $id),+
+            $($variant $(= $id)?),+
         }
 
         impl $name {
             pub const VARIANTS: &[Self] = &[$(Self::$variant),*];
-            pub const MAX: $ty = {
+            pub const MAX_VALUE: $ty = {
                 let mut max = 0;
                 let mut index = 0;
                 loop {
@@ -448,9 +453,14 @@ macro_rules! enum_ids {
             };
 
             #[inline]
+            #[allow(non_upper_case_globals)]
             pub const fn try_from_id(id: u8) -> Option<Self> {
+                $(::paste::paste! {
+                    const [<ID _ $variant>]: $ty = $name::$variant as $ty;
+                })+
+
                 match id {
-                    $($id => Some(Self::$variant),)+
+                    $(::paste::paste!([<ID _ $variant>]) => Some(Self::$variant),)+
                     _ => None,
                 }
             }

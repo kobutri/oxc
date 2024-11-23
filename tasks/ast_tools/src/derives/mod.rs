@@ -31,12 +31,12 @@ enum_ids! {
     #[repr(u8)]
     #[derive(Debug)]
     pub enum DeriveId {
-        CloneIn = 0,
-        ContentEq = 1,
-        ContentHash = 2,
-        ESTree = 3,
-        GetSpan = 4,
-        GetSpanMut = 5,
+        CloneIn,
+        ContentEq,
+        ContentHash,
+        ESTree,
+        GetSpan,
+        GetSpanMut,
     }
 }
 

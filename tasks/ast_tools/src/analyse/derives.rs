@@ -3,7 +3,7 @@ use std::fmt::{self, Debug};
 use crate::derives::DeriveId;
 
 /// Number of bytes required for bit set which can represent all `DeriveId`s.
-const NUM_BYTES: usize = (DeriveId::MAX as usize / 8) + 1;
+const NUM_BYTES: usize = (DeriveId::MAX_VALUE as usize / 8) + 1;
 
 /// Bit set with a bit for each `DeriveId`.
 #[derive(Clone, Copy)]
