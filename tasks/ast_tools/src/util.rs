@@ -427,14 +427,14 @@ pub fn unexpanded_macro_err(mac: &ItemMacro) -> String {
 macro_rules! id_enum {
     (
         $(#[doc = $doc:literal])*
-        #[repr($ty:ident)]
+        #[repr($repr:ident)]
         $(#[$($attr:tt)+])*
         $vis:vis enum $name:ident {
             $($variant:ident $(= $id:literal)?,)+
         }
     ) => {
         $(#[doc = $doc])*
-        #[repr($ty)]
+        #[repr($repr)]
         $(#[$($attr)+])*
         #[derive(Clone, Copy)]
         $vis enum $name {
@@ -443,21 +443,21 @@ macro_rules! id_enum {
 
         const _: () = {
             assert!(
-                std::mem::size_of::<$ty>() <= std::mem::size_of::<usize>(),
+                std::mem::size_of::<$repr>() <= std::mem::size_of::<usize>(),
                 "repr type must be smaller than or same size as `usize`"
             );
         };
 
         impl $name {
             pub const VARIANTS: &[Self] = &[$(Self::$variant),*];
-            pub const MAX_VALUE: $ty = {
+            pub const MAX_VALUE: $repr = {
                 let mut max = 0;
                 let mut index = 0;
                 loop {
                     if index == Self::VARIANTS.len() {
                         break;
                     }
-                    let value = Self::VARIANTS[index] as $ty;
+                    let value = Self::VARIANTS[index] as $repr;
                     if value > max {
                         max = value;
                     }
@@ -470,7 +470,7 @@ macro_rules! id_enum {
             #[allow(non_upper_case_globals)]
             pub const fn try_from_value(value: u8) -> Option<Self> {
                 $(::paste::paste! {
-                    const [<VALUE _ $variant>]: $ty = $name::$variant as $ty;
+                    const [<VALUE _ $variant>]: $repr = $name::$variant as $repr;
                 })+
 
                 match value {
@@ -491,10 +491,10 @@ macro_rules! id_enum {
             #[inline]
             #[expect(clippy::cast_possible_truncation)]
             pub const fn try_from_usize(value: usize) -> Option<Self> {
-                if value > $ty::MAX as usize {
+                if value > $repr::MAX as usize {
                     None
                 } else {
-                    Self::try_from_value(value as $ty)
+                    Self::try_from_value(value as $repr)
                 }
             }
 
@@ -508,8 +508,8 @@ macro_rules! id_enum {
             }
 
             #[inline]
-            pub const fn to_value(self) -> $ty {
-                self as $ty
+            pub const fn to_value(self) -> $repr {
+                self as $repr
             }
 
             #[inline]
