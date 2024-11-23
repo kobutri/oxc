@@ -365,14 +365,14 @@ pub fn unexpanded_macro_err(mac: &ItemMacro) -> String {
 ///     #[inline]
 ///     #[allow(non_upper_case_globals)]
 ///     pub const fn try_from_value(value: u8) -> Option<Self> {
-///         const ID_Bar: u8 = FooId::Bar as u8;
-///         const ID_Qux: u8 = FooId::Qux as u8;
-///         const ID_Gim: u8 = FooId::Gim as u8;
+///         const VALUE_Bar: u8 = FooId::Bar as u8;
+///         const VALUE_Qux: u8 = FooId::Qux as u8;
+///         const VALUE_Gim: u8 = FooId::Gim as u8;
 ///
 ///         match value {
-///             ID_Bar => Some(Self::Bar),
-///             ID_Qux => Some(Self::Qux),
-///             ID_Gim => Some(Self::Gim),
+///             VALUE_Bar => Some(Self::Bar),
+///             VALUE_Qux => Some(Self::Qux),
+///             VALUE_Gim => Some(Self::Gim),
 ///             _ => None,
 ///         }
 ///     }
@@ -470,11 +470,11 @@ macro_rules! id_enum {
             #[allow(non_upper_case_globals)]
             pub const fn try_from_value(value: u8) -> Option<Self> {
                 $(::paste::paste! {
-                    const [<ID _ $variant>]: $ty = $name::$variant as $ty;
+                    const [<VALUE _ $variant>]: $ty = $name::$variant as $ty;
                 })+
 
                 match value {
-                    $(::paste::paste!([<ID _ $variant>]) => Some(Self::$variant),)+
+                    $(::paste::paste!([<VALUE _ $variant>]) => Some(Self::$variant),)+
                     _ => None,
                 }
             }
