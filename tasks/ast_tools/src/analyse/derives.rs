@@ -50,8 +50,8 @@ impl Derives {
     }
 
     const fn byte_index_and_mask(id: DeriveId) -> (usize, u8) {
-        let index = id.to_usize();
-        (index / 8, 1u8 << (index & 7))
+        let value = id.to_usize();
+        (value / 8, 1u8 << (value & 7))
     }
 }
 

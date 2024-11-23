@@ -364,12 +364,12 @@ pub fn unexpanded_macro_err(mac: &ItemMacro) -> String {
 ///
 ///     #[inline]
 ///     #[allow(non_upper_case_globals)]
-///     pub const fn try_from_id(id: u8) -> Option<Self> {
+///     pub const fn try_from_value(value: u8) -> Option<Self> {
 ///         const ID_Bar: u8 = FooId::Bar as u8;
 ///         const ID_Qux: u8 = FooId::Qux as u8;
 ///         const ID_Gim: u8 = FooId::Gim as u8;
 ///
-///         match n {
+///         match value {
 ///             ID_Bar => Some(Self::Bar),
 ///             ID_Qux => Some(Self::Qux),
 ///             ID_Gim => Some(Self::Gim),
@@ -378,34 +378,34 @@ pub fn unexpanded_macro_err(mac: &ItemMacro) -> String {
 ///     }
 ///
 ///     #[inline]
-///     pub const fn from_id(id: u8) -> Self {
-///         if let Some(out) = Self::try_from_id(id) {
+///     pub const fn from_value(value: u8) -> Self {
+///         if let Some(out) = Self::try_from_value(value) {
 ///             out
 ///         } else {
-///             panic!("Invalid ID");
+///             panic!("Invalid value");
 ///         }
 ///     }
 ///
 ///     #[inline]
-///     pub const fn try_from_usize(id: usize) -> Option<Self> {
-///         if id > u8::MAX as usize {
+///     pub const fn try_from_usize(value: usize) -> Option<Self> {
+///         if value > u8::MAX as usize {
 ///             None
 ///         } else {
-///             Self::try_from_id(id as u8)
+///             Self::try_from_value(value as u8)
 ///         }
 ///     }
 ///
 ///     #[inline]
-///     pub const fn from_usize(id: usize) -> Self {
-///         if let Some(out) = Self::try_from_usize(id) {
+///     pub const fn from_usize(value: usize) -> Self {
+///         if let Some(out) = Self::try_from_usize(value) {
 ///             out
 ///         } else {
-///             panic!("Invalid ID");
+///             panic!("Invalid value");
 ///         }
 ///     }
 ///
 ///     #[inline]
-///     pub const fn to_id(self) -> u8 {
+///     pub const fn to_value(self) -> u8 {
 ///         self as u8
 ///     }
 ///
@@ -468,53 +468,53 @@ macro_rules! enum_ids {
 
             #[inline]
             #[allow(non_upper_case_globals)]
-            pub const fn try_from_id(id: u8) -> Option<Self> {
+            pub const fn try_from_value(value: u8) -> Option<Self> {
                 $(::paste::paste! {
                     const [<ID _ $variant>]: $ty = $name::$variant as $ty;
                 })+
 
-                match id {
+                match value {
                     $(::paste::paste!([<ID _ $variant>]) => Some(Self::$variant),)+
                     _ => None,
                 }
             }
 
             #[inline]
-            pub const fn from_id(id: u8) -> Self {
-                if let Some(out) = Self::try_from_id(id) {
+            pub const fn from_value(value: u8) -> Self {
+                if let Some(out) = Self::try_from_value(value) {
                     out
                 } else {
-                    panic!("Invalid ID");
+                    panic!("Invalid value");
                 }
             }
 
             #[inline]
             #[expect(clippy::cast_possible_truncation)]
-            pub const fn try_from_usize(id: usize) -> Option<Self> {
-                if id > $ty::MAX as usize {
+            pub const fn try_from_usize(value: usize) -> Option<Self> {
+                if value > $ty::MAX as usize {
                     None
                 } else {
-                    Self::try_from_id(id as $ty)
+                    Self::try_from_value(value as $ty)
                 }
             }
 
             #[inline]
-            pub const fn from_usize(id: usize) -> Self {
-                if let Some(out) = Self::try_from_usize(id) {
+            pub const fn from_usize(value: usize) -> Self {
+                if let Some(out) = Self::try_from_usize(value) {
                     out
                 } else {
-                    panic!("Invalid ID");
+                    panic!("Invalid value");
                 }
             }
 
             #[inline]
-            pub const fn to_id(self) -> $ty {
+            pub const fn to_value(self) -> $ty {
                 self as $ty
             }
 
             #[inline]
             pub const fn to_usize(self) -> usize {
-                self.to_id() as usize
+                self as usize
             }
 
             #[inline]
