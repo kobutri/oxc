@@ -351,6 +351,13 @@ pub fn unexpanded_macro_err(mac: &ItemMacro) -> String {
 ///     Gim,
 /// }
 ///
+/// const _: () = {
+///     assert!(
+///         std::mem::size_of::<u8>() <= std::mem::size_of::<usize>(),
+///         "repr type must be smaller than or same size as `usize`"
+///     );
+/// };
+///
 /// impl FooId {
 ///     pub const VARIANTS: &[Self] = &[Self::Bar, Self::Qux, Self::Gim];
 ///     pub const MAX_VALUE: u8 = 2;
@@ -433,6 +440,13 @@ macro_rules! enum_ids {
         $vis enum $name {
             $($variant $(= $id)?),+
         }
+
+        const _: () = {
+            assert!(
+                std::mem::size_of::<$ty>() <= std::mem::size_of::<usize>(),
+                "repr type must be smaller than or same size as `usize`"
+            );
+        };
 
         impl $name {
             pub const VARIANTS: &[Self] = &[$(Self::$variant),*];
