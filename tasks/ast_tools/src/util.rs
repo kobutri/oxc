@@ -316,10 +316,11 @@ pub fn unexpanded_macro_err(mac: &ItemMacro) -> String {
 
 /// Macro to implement conversion methods to/from integers for a fieldless enum.
 ///
-/// Implements constants `MAX` and `MAX_USIZE` which is the maximum value, and conversion methods
-/// `to_id`, `to_usize`, `from_id`, `from_usize`, `try_from_id` and `try_from_usize`.
-///
-/// Also implements `name` method.
+/// Implements:
+/// * Constant `VARIANTS` - array of all variants.
+/// * Constant `MAX` - the maximum value.
+/// * Conversion methods `to_id`, `to_usize`, `from_id`, `from_usize`, `try_from_id`, `try_from_usize`.
+/// * Method `name`
 ///
 /// Derives `Clone` and `Copy` on the enum.
 ///
@@ -351,8 +352,8 @@ pub fn unexpanded_macro_err(mac: &ItemMacro) -> String {
 /// }
 ///
 /// impl FooId {
-///     const MAX: u8 = 2;
-///     const MAX_USIZE: usize = 2;
+///     pub const VARIANTS: &[Self] = &[Self::Bar, Self::Qux, Self::Gim];
+///     pub const MAX: u8 = 2;
 ///
 ///     #[inline]
 ///     pub const fn try_from_id(id: u8) -> Option<Self> {
@@ -429,15 +430,15 @@ macro_rules! enum_ids {
         }
 
         impl $name {
+            pub const VARIANTS: &[Self] = &[$(Self::$variant),*];
             pub const MAX: $ty = {
-                let ids = &[$($id,)*];
                 let mut max = 0;
                 let mut index = 0;
                 loop {
-                    if index == ids.len() {
+                    if index == Self::VARIANTS.len() {
                         break;
                     }
-                    let value = ids[index];
+                    let value = Self::VARIANTS[index] as $ty;
                     if value > max {
                         max = value;
                     }
@@ -445,7 +446,6 @@ macro_rules! enum_ids {
                 }
                 max
             };
-            pub const MAX_USIZE: usize = Self::MAX as usize;
 
             #[inline]
             pub const fn try_from_id(id: u8) -> Option<Self> {
