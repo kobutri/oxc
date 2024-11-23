@@ -61,6 +61,16 @@ const DERIVES: &[&dyn Derive] = &[
     &DeriveESTree,
 ];
 
+const GENERATORS: &[&dyn Generator] = &[
+    &AssertLayouts,
+    &AstKindGenerator,
+    &AstBuilderGenerator,
+    &GetIdGenerator,
+    &VisitGenerator,
+    &VisitMutGenerator,
+    &TypescriptGenerator,
+];
+
 type Result<R> = std::result::Result<R, String>;
 type TypeId = usize;
 
