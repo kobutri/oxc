@@ -317,7 +317,7 @@ impl<'c> Parser<'c> {
                     attr.parse_args_with(Punctuated::parse_terminated).unwrap();
                 for arg in args {
                     let derive_id = self.codegen.get_derive_id_by_name(&arg.to_string());
-                    derives = derives.with(derive_id);
+                    derives.add(derive_id);
                 }
             }
         }

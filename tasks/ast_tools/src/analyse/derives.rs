@@ -41,6 +41,14 @@ impl Derives {
         self
     }
 
+    pub fn add(&mut self, id: DeriveId) {
+        *self = self.with(id);
+    }
+
+    pub fn remove(&mut self, id: DeriveId) {
+        *self = self.without(id);
+    }
+
     const fn byte_index_and_mask(id: DeriveId) -> (usize, u8) {
         let index = id.to_usize();
         (index / 8, 1u8 << (index & 7))
