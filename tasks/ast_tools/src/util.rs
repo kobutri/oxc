@@ -430,7 +430,7 @@ macro_rules! id_enum {
         #[repr($repr:ident)]
         $(#[$($attr:tt)+])*
         $vis:vis enum $name:ident {
-            $($variant:ident $(= $id:literal)?,)+
+            $($variant:ident $(= $id:expr)?,)+
         }
     ) => {
         $(#[doc = $doc])*
@@ -468,7 +468,7 @@ macro_rules! id_enum {
 
             #[inline]
             #[allow(non_upper_case_globals)]
-            pub const fn try_from_value(value: u8) -> Option<Self> {
+            pub const fn try_from_value(value: $repr) -> Option<Self> {
                 $(::paste::paste! {
                     const [<VALUE _ $variant>]: $repr = $name::$variant as $repr;
                 })+
@@ -480,7 +480,7 @@ macro_rules! id_enum {
             }
 
             #[inline]
-            pub const fn from_value(value: u8) -> Self {
+            pub const fn from_value(value: $repr) -> Self {
                 if let Some(out) = Self::try_from_value(value) {
                     out
                 } else {
