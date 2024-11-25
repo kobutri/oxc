@@ -11,6 +11,7 @@ fn main() {
         filter: args.opt_value_from_str("--filter").unwrap(),
         detail: args.contains("--detail"),
         diff: args.contains("--diff"),
+        transform_target: args.opt_value_from_str("--target").unwrap(),
     };
 
     if args.debug {

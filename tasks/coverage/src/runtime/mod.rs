@@ -20,7 +20,7 @@ use serde_json::json;
 use crate::{
     suite::{Case, TestResult},
     test262::{Test262Case, TestFlag},
-    workspace_root,
+    workspace_root, AppArgs,
 };
 
 use test262_status::get_v8_test262_failure_paths;
@@ -126,8 +126,8 @@ impl Case for Test262RuntimeCase {
 
     fn run(&mut self) {}
 
-    async fn run_async(&mut self) {
-        let code = self.get_code(false, false);
+    async fn run_async(&mut self, args: &AppArgs) {
+        let code = self.get_code(false, false, args);
         let result = self.run_test_code("codegen", code).await;
 
         if result != TestResult::Passed {
@@ -135,7 +135,7 @@ impl Case for Test262RuntimeCase {
             return;
         }
 
-        let code = self.get_code(true, false);
+        let code = self.get_code(true, false, args);
         let result = self.run_test_code("transform", code).await;
 
         if result != TestResult::Passed {
@@ -151,14 +151,14 @@ impl Case for Test262RuntimeCase {
             return;
         }
 
-        let code = self.get_code(false, true);
+        let code = self.get_code(false, true, args);
         let result = self.run_test_code("minify", code).await;
         self.base.set_result(result);
     }
 }
 
 impl Test262RuntimeCase {
-    fn get_code(&self, transform: bool, minify: bool) -> String {
+    fn get_code(&self, transform: bool, minify: bool, args: &AppArgs) -> String {
         let source_text = self.base.code();
         let is_module = self.base.meta().flags.contains(&TestFlag::Module);
         let is_only_strict = self.base.meta().flags.contains(&TestFlag::OnlyStrict);
@@ -169,7 +169,12 @@ impl Test262RuntimeCase {
         if transform {
             let (symbols, scopes) =
                 SemanticBuilder::new().build(&program).semantic.into_symbol_table_and_scope_tree();
-            let mut options = TransformOptions::enable_all();
+
+            let mut options = if let Some(target) = &args.transform_target {
+                TransformOptions::from_target(target).unwrap()
+            } else {
+                TransformOptions::enable_all()
+            };
             options.jsx.refresh = None;
             options.helper_loader.mode = HelperLoaderMode::External;
             options.typescript.only_remove_type_imports = true;

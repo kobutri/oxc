@@ -136,7 +136,7 @@ const server = createServer((req, res) => {
         await runCodeInHarness(options);
       } catch (err) {
         // if (parseInt(process.version.split('.')[0].replace('v', '')) < 22) {
-          // return res.end('Please upgrade the Node.js version to 22 or later.');
+        // return res.end('Please upgrade the Node.js version to 22 or later.');
         // }
         return res.end(err.toString());
       }

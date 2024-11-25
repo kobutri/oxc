@@ -59,7 +59,7 @@ pub trait Suite<T: Case> {
     fn run_async(&mut self, args: &AppArgs) {
         use futures::{stream, StreamExt};
         self.read_test_cases("runtime", args);
-        let cases = self.get_test_cases_mut().iter_mut().map(T::run_async);
+        let cases = self.get_test_cases_mut().iter_mut().map(|case| T::run_async(case, args));
         Runtime::new().unwrap().block_on(stream::iter(cases).buffer_unordered(100).count());
         self.run_coverage("runtime", args);
         let _ = oxc_tasks_common::agent().delete("http://localhost:32055").call();
@@ -312,7 +312,7 @@ pub trait Case: Sized + Sync + Send + UnwindSafe {
 
     /// Async version of run
     #[expect(clippy::unused_async)]
-    async fn run_async(&mut self) {}
+    async fn run_async(&mut self, _args: &AppArgs) {}
 
     /// Execute the parser once and get the test result
     fn execute(&mut self, source_type: SourceType) -> TestResult {

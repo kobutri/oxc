@@ -54,6 +54,8 @@ pub struct AppArgs {
     pub detail: bool,
     /// Print mismatch diff
     pub diff: bool,
+    /// `target` option for transformer
+    pub transform_target: Option<String>,
 }
 
 impl AppArgs {
