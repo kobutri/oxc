@@ -146,6 +146,7 @@ use serde::Deserialize;
 use oxc_allocator::{Address, GetAddress};
 use oxc_ast::ast::*;
 use oxc_data_structures::stack::{NonEmptyStack, SparseStack};
+use oxc_syntax::symbol::SymbolId;
 use oxc_traverse::{BoundIdentifier, Traverse, TraverseCtx};
 
 use crate::TransformCtx;
@@ -201,10 +202,11 @@ pub struct ClassProperties<'a, 'ctx> {
     //
     /// `true` for class declaration, `false` for class expression
     is_declaration: bool,
-    /// Var for class.
-    /// e.g. `X` in `class X {}`.
+    /// Binding for class name, if class has name
+    class_name_binding: Option<BoundIdentifier<'a>>,
+    /// Temp var for class.
     /// e.g. `_Class` in `_Class = class {}, _Class.x = 1, _Class`
-    class_name: ClassName<'a>,
+    class_temp_binding: Option<BoundIdentifier<'a>>,
     /// Expressions to insert before class
     insert_before: Vec<Expression<'a>>,
     /// Expressions to insert after class expression
@@ -213,22 +215,18 @@ pub struct ClassProperties<'a, 'ctx> {
     insert_after_stmts: Vec<Statement<'a>>,
 }
 
-/// Representation of binding for class name.
-enum ClassName<'a> {
-    /// Class has a name. This is the binding.
-    Binding(BoundIdentifier<'a>),
-    /// Class is anonymous.
-    /// This is the name it would have if we need to set class name, in order to reference it.
-    Name(&'a str),
-}
-
 /// Details of private properties for a class.
 struct PrivateProps<'a> {
     /// Private properties for class. Indexed by property name.
     // TODO(improve-on-babel): Order that temp vars are created in is not important. Use `FxHashMap` instead.
     props: FxIndexMap<Atom<'a>, PrivateProp<'a>>,
-    /// Binding for class, if class has name
+    /// Binding for class name.
+    /// If class has no name, will be binding for temp var.
+    /// Only `None` if class has no static properties, or during transform of class itself.
     class_binding: Option<BoundIdentifier<'a>>,
+    /// `SymbolId` of class name binding (if class has a name).
+    // TODO: Rename this to `class_symbol_id`
+    class_symbol_id: Option<SymbolId>,
     /// `true` for class declaration, `false` for class expression
     is_declaration: bool,
 }
@@ -257,7 +255,8 @@ impl<'a, 'ctx> ClassProperties<'a, 'ctx> {
             class_expression_addresses_stack: NonEmptyStack::new(Address::DUMMY),
             // Temporary values - overwritten when entering class
             is_declaration: false,
-            class_name: ClassName::Name(""),
+            class_name_binding: None,
+            class_temp_binding: None,
             // `Vec`s and `FxHashMap`s which are reused for every class being transformed
             insert_before: vec![],
             insert_after_exprs: vec![],
