@@ -17,7 +17,7 @@ use crate::{
     AllowWarnDeny, FrameworkFlags, OxlintEnv, OxlintGlobals, OxlintSettings,
 };
 
-pub(crate) use host::ContextHost;
+pub use host::ContextHost;
 
 #[derive(Clone)]
 #[must_use]
