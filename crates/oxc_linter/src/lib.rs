@@ -39,6 +39,7 @@ pub use crate::{
     service::{LintService, LintServiceOptions},
     context::ContextHost,
     options::LintOptions,
+    fixer::RuleFixer,
 };
 use crate::{
     config::{OxlintEnv, OxlintGlobals, OxlintSettings},
