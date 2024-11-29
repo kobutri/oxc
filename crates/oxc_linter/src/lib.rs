@@ -25,7 +25,6 @@ use crate::config::ResolvedLinterState;
 use std::{io::Write, path::Path, rc::Rc, sync::Arc};
 
 use config::{ConfigStore, LintConfig};
-use options::LintOptions;
 use oxc_semantic::{AstNode, Semantic};
 use utils::iter_possible_jest_call_node;
 
@@ -39,6 +38,7 @@ pub use crate::{
     rule::{RuleCategory, RuleFixMeta, RuleMeta, RuleWithSeverity},
     service::{LintService, LintServiceOptions},
     context::ContextHost,
+    options::LintOptions,
 };
 use crate::{
     config::{OxlintEnv, OxlintGlobals, OxlintSettings},
