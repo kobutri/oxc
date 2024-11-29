@@ -31,15 +31,16 @@ use utils::iter_possible_jest_call_node;
 pub use crate::{
     builder::{LinterBuilder, LinterBuilderError},
     config::{ESLintRule, LintPlugins, Oxlintrc},
+    context::ContextHost,
     context::LintContext,
+    fixer::CompositeFix,
     fixer::FixKind,
+    fixer::RuleFixer,
     frameworks::FrameworkFlags,
+    options::LintOptions,
     options::{AllowWarnDeny, InvalidFilterKind, LintFilter, LintFilterKind},
     rule::{RuleCategory, RuleFixMeta, RuleMeta, RuleWithSeverity},
     service::{LintService, LintServiceOptions},
-    context::ContextHost,
-    options::LintOptions,
-    fixer::RuleFixer,
 };
 use crate::{
     config::{OxlintEnv, OxlintGlobals, OxlintSettings},
