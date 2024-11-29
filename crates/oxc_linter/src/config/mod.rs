@@ -24,15 +24,15 @@ pub use self::{
 };
 
 #[derive(Debug, Default, Clone)]
-pub(crate) struct LintConfig {
-    pub(crate) plugins: LintPlugins,
-    pub(crate) settings: OxlintSettings,
+pub struct LintConfig {
+    pub plugins: LintPlugins,
+    pub settings: OxlintSettings,
     /// Environments enable and disable collections of global variables.
-    pub(crate) env: OxlintEnv,
+    pub env: OxlintEnv,
     /// Enabled or disabled specific global variables.
-    pub(crate) globals: OxlintGlobals,
+    pub globals: OxlintGlobals,
     /// Absolute path to the configuration file (may be `None` if there is no file).
-    pub(crate) path: Option<PathBuf>,
+    pub path: Option<PathBuf>,
 }
 
 impl From<Oxlintrc> for LintConfig {
