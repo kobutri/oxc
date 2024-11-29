@@ -328,7 +328,7 @@ mod test {
                 LintOptions::default(),
                 Arc::default(),
             ))
-            .spawn_for_test()
+            .spawn_for_test("")
         };
 
         let ctx = build_ctx("foo.js");
