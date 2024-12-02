@@ -41,6 +41,7 @@ pub use crate::{
     options::{AllowWarnDeny, InvalidFilterKind, LintFilter, LintFilterKind},
     rule::{RuleCategory, RuleFixMeta, RuleMeta, RuleWithSeverity},
     service::{LintService, LintServiceOptions},
+    fixer::RuleFix
 };
 use crate::{
     config::{OxlintEnv, OxlintGlobals, OxlintSettings},
