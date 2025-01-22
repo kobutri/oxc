@@ -185,11 +185,10 @@ impl<'a> ContextHost<'a> {
     }
 
     /// Creates a new [`LintContext`] for testing purposes only.
-    #[cfg(test)]
-    pub(crate) fn spawn_for_test(self: Rc<Self>) -> LintContext<'a> {
+    pub fn spawn_for_test(self: Rc<Self>) -> LintContext<'a> {
         LintContext {
             parent: Rc::clone(&self),
-            current_rule_name: "",
+            current_rule_name: "demo",
             current_plugin_name: "eslint",
             current_plugin_prefix: "eslint",
             #[cfg(debug_assertions)]
