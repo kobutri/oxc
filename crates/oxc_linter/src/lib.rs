@@ -33,6 +33,8 @@ pub use crate::{
     context::ContextHost,
     context::LintContext,
     fixer::FixKind,
+    fixer::RuleFixer,
+    fixer::RuleFix,
     frameworks::FrameworkFlags,
     module_record::ModuleRecord,
     options::LintOptions,
