@@ -30,6 +30,7 @@ pub use crate::{
     config::{
         ConfigBuilderError, ConfigStore, ConfigStoreBuilder, ESLintRule, LintPlugins, Oxlintrc,
     },
+    context::ContextHost,
     context::LintContext,
     fixer::FixKind,
     frameworks::FrameworkFlags,
@@ -41,7 +42,6 @@ pub use crate::{
 };
 use crate::{
     config::{LintConfig, OxlintEnv, OxlintGlobals, OxlintSettings, ResolvedLinterState},
-    context::ContextHost,
     fixer::{Fixer, Message},
     rules::RuleEnum,
     utils::iter_possible_jest_call_node,

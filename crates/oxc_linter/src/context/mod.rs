@@ -17,7 +17,7 @@ use crate::{
 };
 
 mod host;
-pub(crate) use host::ContextHost;
+pub use host::ContextHost;
 
 #[derive(Clone)]
 #[must_use]
